@@ -13,12 +13,12 @@ class CMainWindow : public QMainWindow {
   Q_OBJECT
 
   public:
-    explicit CMainWindow(QWidget *parent = 0);
+    explicit CMainWindow(QWidget *parent = nullptr);
     ~CMainWindow();
 
   protected slots:
     void updateParams();
-    void updateParams( QString unused );
+    void updateParams( const QString &unused );
     void run();
 
     void about();
@@ -37,7 +37,7 @@ class CMainWindow : public QMainWindow {
     QProgressDialog* _progress;
 
     bool processExtraneousQuotesFile();
-    QString processExtraneousQuotesLine( QString line );
+    QString processExtraneousQuotesLine( const QString &line );
     bool _extraneousQuotesFileExists;
     QString _extraneousQuotesFile;
 

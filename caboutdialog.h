@@ -11,7 +11,7 @@ class CAboutDialog : public QDialog {
   Q_OBJECT
 
   public:
-    explicit CAboutDialog(QWidget *parent = 0);
+    explicit CAboutDialog(QWidget *parent = nullptr);
     ~CAboutDialog();
 
   private:

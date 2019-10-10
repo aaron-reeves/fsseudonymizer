@@ -51,7 +51,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="lblSRUC">
      <property name="font">
       <font>
        <pointsize>10</pointsize>

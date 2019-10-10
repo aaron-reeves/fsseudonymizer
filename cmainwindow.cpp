@@ -13,17 +13,17 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
 
   this->setWindowTitle(qApp->applicationName() );
 
-  ui->fsInputFile->setLabel( "Input file" );
+  ui->fsInputFile->setLabel( QStringLiteral("Input file") );
   ui->fsInputFile->setMode( CFileSelect::ModeExistingFile | CFileSelect::ModeOpenFile );
-  ui->fsInputFile->setFilter( "CSV (comma-delimited) files (*.csv);; All files (*.*)" );
+  ui->fsInputFile->setFilter( QStringLiteral("CSV (comma-delimited) files (*.csv);; All files (*.*)") );
 
-  ui->fsOutputFile->setLabel( "Output file" );
+  ui->fsOutputFile->setLabel( QStringLiteral("Output file") );
   ui->fsOutputFile->setMode( CFileSelect::ModeAnyFile | CFileSelect::ModeSaveFile );
-  ui->fsOutputFile->setFilter( "BVDEncrypt files (*.bvd);; All files (*.*)" );
+  ui->fsOutputFile->setFilter( QStringLiteral("BVDEncrypt files (*.bvd);; All files (*.*)") );
 
-  ui->fsErrorFile->setLabel( "Error log file" );
+  ui->fsErrorFile->setLabel( QStringLiteral("Error log file") );
   ui->fsErrorFile->setMode( CFileSelect::ModeAnyFile | CFileSelect::ModeSaveFile );
-  ui->fsErrorFile->setFilter( "Error log (plain-text) files (*.txt);; All files (*.*)" );
+  ui->fsErrorFile->setFilter( QStringLiteral("Error log (plain-text) files (*.txt);; All files (*.*)") );
   ui->fsErrorFile->setEnabled( false );
 
   ui->btnEncrypt->setEnabled( false );
@@ -62,15 +62,15 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
   initializeParams();
 
   _extraneousQuotesFileExists = false;
-  _extraneousQuotesFile = "";
+  _extraneousQuotesFile = QLatin1String("");
 
   #ifdef AR_DEBUG
-    ui->lePassPhrase->setText( "my passphrase" );
-    ui->leUserName->setText( "Aaron Reeves" );
-    ui->leEmail->setText( "aaron.reeves@sruc.ac.uk" );
-    ui->fsInputFile->setPathName( "C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/BVD example file-nml-20150817.csv" );
-    ui->fsOutputFile->setPathName( "C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/nmlTestx.bvd" );
-    ui->fsErrorFile->setPathName( "C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/nmlErrorsx.txt" );
+    ui->lePassPhrase->setText( QStringLiteral("my passphrase") );
+    ui->leUserName->setText( QStringLiteral("Aaron Reeves") );
+    ui->leEmail->setText( QStringLiteral("aaron.reeves@sruc.ac.uk") );
+    ui->fsInputFile->setPathName( QStringLiteral("C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/BVD example file-nml-20150817.csv") );
+    ui->fsOutputFile->setPathName( QStringLiteral("C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/nmlTestx.bvd") );
+    ui->fsErrorFile->setPathName( QStringLiteral("C:/Users/areeves/Documents/ResearchProjects/BVDEngland/sampleData/troubleshooting/nmlErrorsx.txt") );
     updateParams();
   #endif
 }
@@ -84,80 +84,80 @@ CMainWindow::~CMainWindow() {
 
 
 void CMainWindow::initializeParams() {
-  _params.insert( "logerrors", false );
-  _params.insert( "inputPath", QVariant( QVariant::String ) );
-  _params.insert( "outputPath", QVariant( QVariant::String ) );
+  _params.insert( QStringLiteral("logerrors"), false );
+  _params.insert( QStringLiteral("inputPath"), QVariant( QVariant::String ) );
+  _params.insert( QStringLiteral("outputPath"), QVariant( QVariant::String ) );
 }
 
 
 void CMainWindow::updateParams() {
-  updateParams( "unused string" );
+  updateParams( QStringLiteral("unused string") );
 }
 
 
-void CMainWindow::updateParams( QString unused ) {
-  Q_UNUSED( unused );
+void CMainWindow::updateParams( const QString &unused ) {
+  Q_UNUSED( unused )
 
   qDebug() << "UPDATE PARAMS";
 
   bool emptyStr = false;
 
   if( 0 < ui->lePassPhrase->text().trimmed().length() )
-    _params.insert( "passphrase", ui->lePassPhrase->text().trimmed() );
+    _params.insert( QStringLiteral("passphrase"), ui->lePassPhrase->text().trimmed() );
   else {
-    _params.insert( "passphrase", QVariant( QVariant::String ) );
+    _params.insert( QStringLiteral("passphrase"), QVariant( QVariant::String ) );
     emptyStr = true;
   }
 
   //qDebug() << "Input path:" << ui->fsInputFile->pathName();
   if( 0 < ui->fsInputFile->pathName().length() )
-    _params.insert( "inputPath", ui->fsInputFile->pathName() );
+    _params.insert( QStringLiteral("inputPath"), ui->fsInputFile->pathName() );
   else {
-    _params.insert( "inputPath", QVariant( QVariant::String ) );
+    _params.insert( QStringLiteral("inputPath"), QVariant( QVariant::String ) );
     emptyStr = true;
   }
 
   //qDebug() << "Output path:" << ui->fsOutputFile->pathName();
   if( 0 < ui->fsOutputFile->pathName().length() )
-    _params.insert( "outputPath", ui->fsOutputFile->pathName() );
+    _params.insert( QStringLiteral("outputPath"), ui->fsOutputFile->pathName() );
   else {
-    _params.insert( "outputPath", QVariant( QVariant::String ) );
+    _params.insert( QStringLiteral("outputPath"), QVariant( QVariant::String ) );
     emptyStr = true;
   }
 
   if( 0 < ui->leUserName->text().trimmed().length() )
-    _params.insert( "userName", ui->leUserName->text().trimmed() );
+    _params.insert( QStringLiteral("userName"), ui->leUserName->text().trimmed() );
   else {
-    _params.insert( "userName", QVariant( QVariant::String ) );
+    _params.insert( QStringLiteral("userName"), QVariant( QVariant::String ) );
     emptyStr = true;
   }
 
   if( 0 < ui->leEmail->text().trimmed().length() )
-    _params.insert( "userEmail", ui->leEmail->text().trimmed() );
+    _params.insert( QStringLiteral("userEmail"), ui->leEmail->text().trimmed() );
   else {
-    _params.insert( "userEmail", QVariant( QVariant::String ) );
+    _params.insert( QStringLiteral("userEmail"), QVariant( QVariant::String ) );
     emptyStr = true;
   }
 
   if( ui->cbxWriteErrorLog->isChecked() ) {
-    _params.insert( "logerrors", true );
+    _params.insert( QStringLiteral("logerrors"), true );
     ui->fsErrorFile->setEnabled( true );
 
     if( 0 < ui->fsErrorFile->pathName().length() )
-      _params.insert( "errPath", ui->fsErrorFile->pathName() );
+      _params.insert( QStringLiteral("errPath"), ui->fsErrorFile->pathName() );
     else {
-      _params.insert( "errPath", QVariant( QVariant::String ) );
+      _params.insert( QStringLiteral("errPath"), QVariant( QVariant::String ) );
       emptyStr = true;
     }
   }
   else {
-    _params.insert( "logerrors", false );
+    _params.insert( QStringLiteral("logerrors"), false );
     ui->fsErrorFile->setEnabled( false );
   }
 
-  _params.insert( "nml", ui->cbxNml->isChecked() );
+  _params.insert( QStringLiteral("nml"), ui->cbxNml->isChecked() );
 
-  _params.insert( "pchs", ui->cbxPchs->isChecked() );
+  _params.insert( QStringLiteral("pchs"), ui->cbxPchs->isChecked() );
 
   _processor->setParams( _params );
 
@@ -168,12 +168,12 @@ void CMainWindow::updateParams( QString unused ) {
 bool CMainWindow::isTextFile() {
   bool result, error;
   QString fileTypeInfo;
-  result = magicIsAsciiTextFile( _params.value( "inputPath" ).toString().toLatin1().data(), &error, &fileTypeInfo );
+  result = magicIsAsciiTextFile( _params.value( QStringLiteral("inputPath") ).toString(), &error, &fileTypeInfo );
 
   if( error ) {
     QMessageBox::critical(
       this,
-      "Cannot determine file type",
+      QStringLiteral("Cannot determine file type"),
       QString(
         "The type of the selected input file could not be determined."
         "  This may indicate a problem with your installation of BVDEncrypt."
@@ -186,7 +186,7 @@ bool CMainWindow::isTextFile() {
   else if( !result ) {
     int reply = QMessageBox::critical(
       this,
-      "Incorrect file type",
+      QStringLiteral("Incorrect file type"),
       QString(
         "The selected input file does not appear to be a plain-text, comma-delimited (CSV) file."
         "  The file type is reported to be \"%1\"."
@@ -203,7 +203,7 @@ bool CMainWindow::isTextFile() {
 }
 
 
-QString CMainWindow::processExtraneousQuotesLine( QString line ) {
+QString CMainWindow::processExtraneousQuotesLine( const QString &line ) {
   QString result = line;
   if( ( '"' == result.at(0) ) && ( '"' == result.at(result.length() - 1) ) )
     result = result.mid( 1, result.length() - 2 );
@@ -221,7 +221,7 @@ bool CMainWindow::processExtraneousQuotesFile() {
   // eqf is extraneousQuotesFile
   bool result;
 
-  QFile oif( _params.value( "inputPath" ).toString() );
+  QFile oif( _params.value( QStringLiteral("inputPath") ).toString() );
   if( !oif.open( QIODevice::ReadOnly | QIODevice::Text ) )
     result = false;
   else {
@@ -259,8 +259,8 @@ bool CMainWindow::checkExtraneousQuotesOK() {
 
   if( ui->cbxNmlQuotes->isChecked() ) {
     if( processExtraneousQuotesFile() ) {
-      _params.remove( "inputPath" );
-      _params.insert( "inputPath", _extraneousQuotesFile );
+      _params.remove( QStringLiteral("inputPath") );
+      _params.insert( QStringLiteral("inputPath"), _extraneousQuotesFile );
       _processor->setParams( _params );
       _extraneousQuotesFileExists = true;
       result = true;
@@ -268,7 +268,7 @@ bool CMainWindow::checkExtraneousQuotesOK() {
     else {
       QMessageBox::critical(
         this,
-        "Input file problem",
+        QStringLiteral("Input file problem"),
         QString(
           "An unexpected error has been encountered."
           "  Please ensure that your input file is in the correct format, and that you have sufficient disk space and permission to store a copy of the input file."
@@ -293,7 +293,7 @@ bool CMainWindow::checkfileHeader() {
   bool result;
 
   QCsvObject* input = new QCsvObject(
-    _params.value( "inputPath" ).toString(), // filename
+    _params.value( QStringLiteral("inputPath") ).toString(), // filename
     true,                                    // containsFieldList
     true,                                    // stringsContainDelimiters (default value)
     QCsv::LineByLine,                        // readMode (default value)
@@ -303,8 +303,8 @@ bool CMainWindow::checkfileHeader() {
   if( !input->open() ) {
     QMessageBox::critical(
       this,
-      "Cannot open input file",
-      "The selected input file cannot be opened.  Please ensure that this file is not open in any other application, and check your file permissions."
+      QStringLiteral("Cannot open input file"),
+      QStringLiteral("The selected input file cannot be opened.  Please ensure that this file is not open in any other application, and check your file permissions.")
     );
 
     result = false;
@@ -321,8 +321,8 @@ bool CMainWindow::checkfileHeader() {
     if( ( 0 >= nFields ) || ( 0 == fieldsInFile.count() ) ) {
       QMessageBox::critical(
         this,
-        "Input file appears to be empty",
-        "The selected input file appears to be empty.  Please ensure that this file is the correct format and is not open in any other application, and check your file permissions."
+        QStringLiteral("Input file appears to be empty"),
+        QStringLiteral("The selected input file appears to be empty.  Please ensure that this file is the correct format and is not open in any other application, and check your file permissions.")
       );
 
       result = false;
@@ -335,11 +335,11 @@ bool CMainWindow::checkfileHeader() {
         "The following fields, required for the BVD database, are not present in the selected input file:"
         "\n\n%1\n\n"
         "Proceed with file processing?"
-      ).arg( missingFields.join( ", " ) );
+      ).arg( missingFields.join( QStringLiteral(", ") ) );
 
       int reply = QMessageBox::question(
         this,
-        "Missing data fields",
+        QStringLiteral("Missing data fields"),
         message
       );
 
@@ -354,15 +354,15 @@ bool CMainWindow::checkfileHeader() {
 
 
 void CMainWindow::run() {
-  qDebug() << _params.value( "outputPath" );
-  qDebug() << _params.value( "errPath" );
+  qDebug() << _params.value( QStringLiteral("outputPath") );
+  qDebug() << _params.value( QStringLiteral("errPath") );
 
   _processor->setParams( _params );
 
   if( CProcessor::SUCCESS != _processor->result() ) {
     CMessageDialog* dlg = new CMessageDialog(
-      "Could not encrypt file",
-      "The following problems were encountered:",
+      QStringLiteral("Could not encrypt file"),
+      QStringLiteral("The following problems were encountered:"),
       QMessageBox::Warning,
       this
     );
@@ -373,32 +373,32 @@ void CMainWindow::run() {
   else {
     // Check paths for input, output, and error files.
     //------------------------------------------------
-    if( !QFile::exists( _params.value( "inputPath" ).toString() ) ) {
+    if( !QFile::exists( _params.value( QStringLiteral("inputPath") ).toString() ) ) {
       QMessageBox::critical(
         this,
-        "Input file does not exist",
-        "The indicated input file does not exist.  Please select a different file."
+        QStringLiteral("Input file does not exist"),
+        QStringLiteral("The indicated input file does not exist.  Please select a different file.")
       );
 
       return;
     }
 
-    if( QFile::exists( _params.value( "outputPath" ).toString() ) ) {
+    if( QFile::exists( _params.value( QStringLiteral("outputPath") ).toString() ) ) {
       int reply = QMessageBox::question(
         this,
-        "Overwrite output file?",
-        "An output file with a matching name already exists in the selected folder.\n\nProceed and overwrite existing file?"
+        QStringLiteral("Overwrite output file?"),
+        QStringLiteral("An output file with a matching name already exists in the selected folder.\n\nProceed and overwrite existing file?")
       );
 
       if( !( QMessageBox::Yes == reply ) )
         return;
     }
 
-    if( _params.value( "logerrors" ).toBool() && QFile::exists( _params.value( "errPath" ).toString() ) ) {
+    if( _params.value( QStringLiteral("logerrors") ).toBool() && QFile::exists( _params.value( QStringLiteral("errPath") ).toString() ) ) {
       int reply = QMessageBox::question(
         this,
-        "Overwrite err log file?",
-        "An error log file with a matching name already exists in the selected folder.\n\nProceed and overwrite existing file?"
+        QStringLiteral("Overwrite err log file?"),
+        QStringLiteral("An error log file with a matching name already exists in the selected folder.\n\nProceed and overwrite existing file?")
       );
 
       if( !( QMessageBox::Yes == reply ) )
@@ -440,18 +440,18 @@ void CMainWindow::run() {
 
     if( _progress->wasCanceled() ) {
       qDebug() << "progress.wasCanceled()";
-      if( QFile::exists( _params.value( "outputPath" ).toString() ) )
-        QFile::remove( _params.value( "outputPath" ).toString() );
-      QMessageBox::warning( this, "Operation canceled", "Operation was canceled before completion." );
+      if( QFile::exists( _params.value( QStringLiteral("outputPath") ).toString() ) )
+        QFile::remove( _params.value( QStringLiteral("outputPath") ).toString() );
+      QMessageBox::warning( this, QStringLiteral("Operation canceled"), QStringLiteral("Operation was canceled before completion.") );
     }
     else if( CProcessor::SUCCESS == _processor->result() )
-      QMessageBox::information( this, "Success", "File generation is complete.  No validation errors were encountered." );
-    else if( _params.value( "logerrors" ).toBool() && !(_processor->result() & CProcessor::ERROR_LOG_PROBLEM) )
-      QMessageBox::warning( this, "Success", "File generation is complete, but validation errors were encountered.  An error log file has been generated." );
+      QMessageBox::information( this, QStringLiteral("Success"), QStringLiteral("File generation is complete.  No validation errors were encountered.") );
+    else if( _params.value( QStringLiteral("logerrors") ).toBool() && !(_processor->result() & CProcessor::ERROR_LOG_PROBLEM) )
+      QMessageBox::warning( this, QStringLiteral("Success"), QStringLiteral("File generation is complete, but validation errors were encountered.  An error log file has been generated.") );
     else {
       CMessageDialog* dlg = new CMessageDialog(
-        "Problems encountered",
-        "File generation is complete, but the following problems were encountered:",
+        QStringLiteral("Problems encountered"),
+        QStringLiteral("File generation is complete, but the following problems were encountered:"),
         QMessageBox::Information,
         this
       );

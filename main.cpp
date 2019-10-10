@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
     return processor.result();
   #else
     QApplication app(argc, argv);
-    app.setApplicationName( "BVDEncrypt" );
-    app.setApplicationVersion( APP_VERSION );
+    app.setApplicationName( QStringLiteral("BVDEncrypt") );
+    app.setApplicationVersion( QStringLiteral( APP_VERSION ) );
     CMainWindow w;
     w.show();
     return app.exec();
