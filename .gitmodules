@@ -1,6 +1,3 @@
-[submodule "sharedCode/epic_general_purpose"]
-	path = sharedCode/epic_general_purpose
-	url = git@epidata.sruc.ac.uk:shared/epic_general_purpose.git
 [submodule "sharedCode/ar_general_purpose"]
 	path = sharedCode/ar_general_purpose
 	url = git@epidata.sruc.ac.uk:shared/ar_general_purpose.git

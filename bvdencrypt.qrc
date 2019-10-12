@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/bvdencrypt">
-        <file>bvdfree.ico</file>
-        <file>bvdfree.png</file>
-    </qresource>
-</RCC>

@@ -1,31 +1,44 @@
-//#include "cmainwindow.h"
-//#include <QApplication>
+/*
+XLPseudonymizer - main.cpp
+--------------------------
+Begin: 2019/10/12
+Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
+---------------------------------------------------
+Copyright (C) 2019 Scotland's Rural College (SRUC)
 
-#ifdef CONSOLEAPP
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+*/
+
+
+#ifdef CONSOLE_APP
+  #include <QCoreApplication>
   #include <QtCore>
   #include <ar_general_purpose/csv.h>
   #include <ar_general_purpose/cfilelist.h>
   #include <ar_general_purpose/qcout.h>
-  #include <BVDShared/cprocessor.h>
 #else
   #include <QApplication>
   #include <QtCore>
   #include <QtGui>
-  #include <cmainwindow.h>
-#include <BVDShared/cbvdrecord.h>
+  #include "cmainwindow.h"
 #endif
 
-#ifdef CONSOLEAPP
+#include <ar_general_purpose/returncodes.h>
 
+#include "cprocessor.h"
+
+#ifdef CONSOLE_APP
 /*
  * Sets up the expected command-line arguments
  */
 void setupCmdArgs( QCommandLineParser* cmd, QCoreApplication* app ) {
   cmd->setSingleDashWordOptionMode( QCommandLineParser::ParseAsLongOptions );
 
-  QString descr = QString( "%1 %2\n" ).arg( app->applicationName() ).arg( app->applicationVersion() );
+  QString descr = QStringLiteral( "%1 %2\n" ).arg( app->applicationName(), app->applicationVersion() );
   descr.append(
-    "Copyright (C) 2015 Epidemiology Research Unit, Scotland's Rural College (SRUC).\n"
+    "Copyright (C) 2019 Scotland's Rural College (SRUC).\n"
     "This is free software, released under the terms of the GNU General Public License.\n"
     "Please see the source or the following URL for copying conditions.\n"
     "<http://epidemiology.sruc.ac.uk/bvdfree>\n"
@@ -37,76 +50,101 @@ void setupCmdArgs( QCommandLineParser* cmd, QCoreApplication* app ) {
   cmd->addHelpOption();
   cmd->addVersionOption();
 
-  QCommandLineOption cmdInputPath( QStringList() << "i" << "input", "Input file path name.  Required.", "inputFilePath" );
+  QCommandLineOption cmdInputPath(
+    QStringList() << QStringLiteral("i") << QStringLiteral("input"),
+    QStringLiteral("Input (data) file path. Required."),
+    QStringLiteral("inputFilePath")
+  );
   cmd->addOption( cmdInputPath );
-  QCommandLineOption cmdOutputPath( QStringList() << "o" << "output", "Ouput file path name.  Optional, defaults to <input file path name>.bvd.", "outputFilePath" );
+  QCommandLineOption cmdConfigPath(
+    QStringList() << QStringLiteral("r") << QStringLiteral("rules"),
+    QStringLiteral("Rules file path. Required."),
+    QStringLiteral("rulesFilePath")
+  );
+  cmd->addOption( cmdConfigPath );
+  QCommandLineOption cmdOutputPath(
+    QStringList() << QStringLiteral("o") << QStringLiteral("output"),
+    QStringLiteral("Ouput file path. Optional, defaults to <input file path>-pseudonymized.csv|xlsx."),
+    QStringLiteral("outputFilePath")
+  );
   cmd->addOption( cmdOutputPath );
-  QCommandLineOption cmdPassPhrase( QStringList() << "p" << "passphrase", "Pass phrase to be used for encryption.  Required.", "passPhrase" );
+  QCommandLineOption cmdPassPhrase(
+    QStringList() << QStringLiteral("p") << QStringLiteral("passphrase"),
+    QStringLiteral("Pass phrase to be used for encryption. Required."),
+    QStringLiteral("passPhrase")
+  );
   cmd->addOption( cmdPassPhrase );
-  QCommandLineOption cmdUser( QStringList() << "u" << "username", "Name of user responsible for file processing.  Required.", "userName" );
+  QCommandLineOption cmdUser(
+    QStringList() << QStringLiteral("u") << QStringLiteral("username"),
+    QStringLiteral("Name of user responsible for file processing. Optional."),
+    QStringLiteral("userName")
+  );
   cmd->addOption( cmdUser );
-  QCommandLineOption cmdEmail( QStringList() << "m" << "email", "Email address of user responsible for file processing.  Required.", "emailAddress" );
+  QCommandLineOption cmdEmail(
+    QStringList() << QStringLiteral("m") << QStringLiteral("email"),
+    QStringLiteral("Email address of user responsible for file processing. Optional."),
+    QStringLiteral("emailAddress")
+  );
   cmd->addOption( cmdEmail );
 
-  QCommandLineOption cmdWriteErrFile( QStringList() << "l" << "logerrors", "Optional.  If present, write a file containing a list of all validation errors encountered." );
-  cmd->addOption( cmdWriteErrFile );
-  QCommandLineOption cmdErrFilePath( QStringList() << "e" << "errorfile", "Path name for error file generated if any validation errors are encountered, if using --logerrors.  Optional, defaults to <input file path name>.err", "errorFilePath" );
-  cmd->addOption( cmdErrFilePath );
+//  QCommandLineOption cmdWriteErrFile( QStringList() << "l" << "logerrors", "Optional.  If present, write a file containing a list of all validation errors encountered." );
+//  cmd->addOption( cmdWriteErrFile );
+//  QCommandLineOption cmdErrFilePath( QStringList() << "e" << "errorfile", "Path name for error file generated if any validation errors are encountered, if using --logerrors.  Optional, defaults to <input file path name>.err", "errorFilePath" );
+//  cmd->addOption( cmdErrFilePath );
 
-  QCommandLineOption cmdSilent( QStringList() << "s" << "silent", "Optional.  If present, do not display error messages while running or upon completion." );
-  cmd->addOption( cmdSilent );
-
-  QCommandLineOption cmdNml( QStringList() << "n" << "nml", "Optional.  If present, encrypt the lab test reference number.  This option is used by NML, which includes holding numbers as part of its lab test references." );
-  cmd->addOption( cmdNml );
-
-  QCommandLineOption cmdPchs( QStringList() << "p" << "pchs", "Optional.  If present, do not include parish numbers in output.  This option is used by PCHS, which cannot distribute parish numbers." );
-  cmd->addOption( cmdPchs );
-
-  #ifdef AR_DEBUG
-    QCommandLineOption cmdForce( QStringList() << "f" << "force", "Optional.  Available only during debugging.  If present, bypass some data integrity safeguards." );
-    cmd->addOption( cmdForce );
-  #endif
+//  QCommandLineOption cmdSilent( QStringList() << "s" << "silent", "Optional.  If present, do not display error messages while running or upon completion." );
+//  cmd->addOption( cmdSilent );
 
   cmd->process( *app );
 }
 
 
 /*
- * Parses command-line arguments
- *
- * No validation is attempted here.  This is done by CProcessor.
+ * Parses command-line arguments, and performs some basic validation
  */
-QHash<QString, QVariant> processCmdArgs( QCommandLineParser* cmd ) {
-  QHash<QString, QVariant> params;
+QHash<QString, QString> processCmdArgs( QCommandLineParser* cmd, bool& error, QString& errMsg ) {
+  QHash<QString, QString> params;
 
-  if( cmd->isSet( "passphrase" ) )
-    params.insert( "passphrase", cmd->value( "passphrase" ) );
+  error = false;
+  errMsg = QString();
 
-  if( cmd->isSet( "input" ) )
-    params.insert( "inputPath", cmd->value( "input" ) );
+  if( cmd->isSet( QStringLiteral("input") ) )
+    params.insert( QStringLiteral("input"), cmd->value( QStringLiteral("input") ) );
+  else {
+    error = true;
+    errMsg.append( "Input file path is missing.\n" );
+  }
 
-  if( cmd->isSet( "username" ) )
-    params.insert( "userName", cmd->value( "username" ) );
+  if( cmd->isSet( QStringLiteral("rules") ) )
+    params.insert( QStringLiteral("rules"), cmd->value( QStringLiteral("rules") ) );
+  else {
+    error = true;
+    errMsg.append( "Configuration file path is missing.\n" );
+  }
 
-  if( cmd->isSet( "email" ) )
-    params.insert( "userEmail", cmd->value( "email" ) );
+  if( cmd->isSet( QStringLiteral("passphrase") ) ) {
+    params.insert( QStringLiteral("passphrase"), cmd->value( QStringLiteral("passphrase") ) );
+  }
+  else {
+    error = true;
+    errMsg.append( "Pass phrase is missing.\n" );
+  }
 
-  if( cmd->isSet( "output" ) )
-    params.insert( "outputPath", cmd->value( "output" ) );
+  if( cmd->isSet( QStringLiteral("username") ) )
+    params.insert( QStringLiteral("userName"), cmd->value( QStringLiteral("username") ) );
 
-  if( cmd->isSet( "errorfile" ) )
-    params.insert( "errPath", cmd->value( "errorfile" ) );
+  if( cmd->isSet( QStringLiteral("email") ) )
+    params.insert( QStringLiteral("email"), cmd->value( QStringLiteral("email") ) );
 
-  params.insert( "logerrors", cmd->isSet( "logerrors" ) );
-  params.insert( "silent", cmd->isSet( "silent" ) );
-  params.insert( "nml", cmd->isSet( "nml" ) );
-  params.insert( "pchs", cmd->isSet( "pchs" ) );
+  if( cmd->isSet( QStringLiteral("output") ) ) {
+    params.insert( QStringLiteral("output"), cmd->value( QStringLiteral("output") ) );
+  }
 
-  #ifdef AR_DEBUG
-    params.insert( "force", cmd->isSet( "force" ) );
-  #else
-    params.insert( "force", false );
-  #endif
+//  if( cmd->isSet( "errorfile" ) )
+//    params.insert( "errPath", cmd->value( "errorfile" ) );
+
+//  params.insert( "logerrors", cmd->isSet( "logerrors" ) );
+//  params.insert( "silent", cmd->isSet( "silent" ) );
 
   return params;
 }
@@ -121,44 +159,53 @@ QHash<QString, QVariant> processCmdArgs( QCommandLineParser* cmd ) {
  * For the GUI version, CMainWindow, which inherits CProcessor, is used.
  */
 int main(int argc, char *argv[]) {
-  #ifdef CONSOLEAPP
-    // Set up the core application.
-    //-----------------------------
+  #ifdef CONSOLE_APP
+    int result = ReturnCode::SUCCESS;
+
+    // Set up the core application
+    //----------------------------
     QCoreApplication app(argc, argv);
-    app.setApplicationName( "BVDEncrypt" );
-    app.setApplicationVersion( APP_VERSION );
+    app.setApplicationName( QStringLiteral( APP_NAME ) );
+    app.setApplicationVersion( QStringLiteral( APP_VERSION ) );
 
-    // Define commandline arguments.
-    //------------------------------
-    QCommandLineParser* cmd = new QCommandLineParser();
-    setupCmdArgs( cmd, &app );
+    // Define commandline arguments
+    //-----------------------------
+    QCommandLineParser cmd;
+    setupCmdArgs( &cmd, &app );
 
-    // Handle commandline arguments.
-    //------------------------------
-    QHash<QString, QVariant> params = processCmdArgs( cmd );
-    CProcessor processor( params, !cmd->isSet( "force" ) );
+    // Handle commandline arguments
+    //-----------------------------
+    bool error;
+    QString errorMsg;
 
-    // Run the process.
-    //-----------------
-    if( CProcessor::SUCCESS == processor.result() )
-      processor.readAndEncryptData();
+    QHash<QString, QString> params = processCmdArgs( &cmd, error, errorMsg );
 
-    // Display errors to console, if requested.
-    //-----------------------------------------
-    if( (CProcessor::SUCCESS != processor.result()) && !processor.silent() ) {
+    if( error ) {
+      cout << errorMsg << endl;
+      return ReturnCode::BAD_COMMAND;
+    }
+
+    // Run the process
+    //----------------
+    CProcessor processor( params );
+    result = ( result | processor.result() );
+
+    // Display errors to console, if requested
+    //----------------------------------------
+    if( ReturnCode::SUCCESS != result ) {
       cout << "The following errors were encountered:" << endl;
-      cout << processor.errors();
+      foreach( const QString& msg, processor.errorMessages() ) {
+        cout << msg << endl;
+      }
       cout << flush;
     }
 
-    // Clean up and go home.
-    //----------------------
-    delete cmd;
-
-    return processor.result();
+    // Clean up and go home
+    //---------------------
+    return result;
   #else
     QApplication app(argc, argv);
-    app.setApplicationName( QStringLiteral("BVDEncrypt") );
+    app.setApplicationName( QStringLiteral( APP_NAME ) );
     app.setApplicationVersion( QStringLiteral( APP_VERSION ) );
     CMainWindow w;
     w.show();
