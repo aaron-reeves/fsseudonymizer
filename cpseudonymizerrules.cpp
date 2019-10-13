@@ -24,13 +24,15 @@ CPseudonymizerRule::CPseudonymizerRule() {
 
 
 CPseudonymizerRule::CPseudonymizerRule( QCsv* csv ) {
+  initialize();
+
   _rowNumber = csv->currentRowNumber() + 1;
 
   if( !csv->field( QStringLiteral("FieldName") ).isEmpty() )
     _fieldName = csv->field( QStringLiteral("FieldName") );
   else {
     _isValid = false;
-    _errMsgs.append( QStringLiteral("'FieldName' is empty.") );
+    _errMsgs.append( QStringLiteral("Rules file line %1: 'FieldName' is empty.").arg( _rowNumber ) );
   }
 
   if( !csv->field( QStringLiteral("GeneratePseudonym") ).isEmpty() ) {
@@ -38,25 +40,25 @@ CPseudonymizerRule::CPseudonymizerRule( QCsv* csv ) {
       _pseudonymize = strToBool( csv->field( QStringLiteral("GeneratePseudonym") ) );
     else {
       _isValid = false;
-      _errMsgs.append( QStringLiteral("'GeneratePseudonym' contains an invalid value.") );
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'GeneratePseudonym' contains an invalid value.").arg( _rowNumber ) );
     }
   }
 
   if( !csv->field( QStringLiteral("RequiredField") ).isEmpty() ) {
     if( strIsBool( csv->field( QStringLiteral("RequiredField") ) ) )
-      _pseudonymize = strToBool( csv->field( QStringLiteral("RequiredField") ) );
+      _isRequired = strToBool( csv->field( QStringLiteral("RequiredField") ) );
     else {
       _isValid = false;
-      _errMsgs.append( QStringLiteral("'RequiredField' contains an invalid value.") );
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'RequiredField' contains an invalid value.").arg( _rowNumber ) );
     }
   }
 
   if( !csv->field( QStringLiteral("ValidateField") ).isEmpty() ) {
     if( strIsBool( csv->field( QStringLiteral("ValidateField") ) ) )
-      _pseudonymize = strToBool( csv->field( QStringLiteral("ValidateField") ) );
+      _validate = strToBool( csv->field( QStringLiteral("ValidateField") ) );
     else {
       _isValid = false;
-      _errMsgs.append( QStringLiteral("'ValidateField' contains an invalid value.") );
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'ValidateField' contains an invalid value.").arg( _rowNumber ) );
     }
   }
 
@@ -64,13 +66,14 @@ CPseudonymizerRule::CPseudonymizerRule( QCsv* csv ) {
     _validationRegExp = QRegExp( csv->field( "ValidationRegExp" ) );
     if( !_validationRegExp.isValid() ) {
       _isValid = false;
-      _errMsgs.append( QStringLiteral("'ValidationRegExp' contains an invalid expression.") );
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'ValidationRegExp' contains an invalid expression.").arg( _rowNumber ) );
     }
   }
 }
 
 
 void CPseudonymizerRule::initialize() {
+  _rowNumber = -1;
   _pseudonymize = false;
   _isRequired = false;
   _validate = false;
@@ -80,11 +83,15 @@ void CPseudonymizerRule::initialize() {
 
 
 void CPseudonymizerRule::assign( const CPseudonymizerRule& other ) {
+  _rowNumber = other._rowNumber;
+
   _fieldName = other._fieldName;
   _pseudonymize = other._pseudonymize;
   _isRequired = other._isRequired;
   _validate = other._validate;
   _validationRegExp = other._validationRegExp;
+
+  _isValid = other._isValid;
 }
 
 
@@ -94,20 +101,19 @@ QString CPseudonymizerRule::sha( const QString& value, const QString& passphrase
 }
 
 
-QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passphrase, bool& error, QString& errMsg ) const {
+QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passphrase, bool& error, QStringList& errMsgs ) const {
   QVariant result = val;
 
   error = false; // Until shown otherwise
-  QStringList errs;
 
   if( _isRequired && val.isNull() ) {
     error = true;
-    errs.append( QStringLiteral("Required value is missing.") );
+    errMsgs.append( QStringLiteral("Required value is missing.") );
   }
 
   if( _validate && !_validationRegExp.exactMatch( val.toString() ) ) {
     error = true;
-    errs.append( QStringLiteral("Value does not match the specified regular expression.") );
+    errMsgs.append( QStringLiteral("Value does not match the specified regular expression.") );
   }
 
   if( !error && _pseudonymize ) {
@@ -115,7 +121,6 @@ QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passph
   }
 
   if( error ) {
-    errMsg = errs.join( QStringLiteral( " " ) );
     return QVariant();
   }
   else {
@@ -125,19 +130,22 @@ QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passph
 
 
 void CPseudonymizerRule::debug() const {
-  qDebug() << "fieldName:" << _fieldName;
-  qDebug() << "pseudonymize:" << _pseudonymize;
-  qDebug() << "isRequired:" << _isRequired;
-  qDebug() << "validate:" << _validate;
-  qDebug() << "validationRegExp:" << _validationRegExp;
+  qDb() << "fieldName:" << _fieldName;
+  qDb() << "pseudonymize:" << _pseudonymize;
+  qDb() << "isRequired:" << _isRequired;
+  qDb() << "validate:" << _validate;
+  qDb() << "validationRegExp:" << _validationRegExp;
+  qDb() << "isValidRule:" << _isValid;
 }
 
 
-QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName ) {
+QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName, const CSpreadsheetWorkBook::SpreadsheetFileFormat format ) {
   QCsv csv;
 
-  CSpreadsheetWorkBook wb( rulesFileName );
+  CSpreadsheetWorkBook wb( format, rulesFileName );
 
+  // The spreadsheet file should have exactly 1 sheet that contains data.
+  // If this is not the case, we don't currently know what to do.
   if( wb.isOpen() ) {
     wb.readAllSheets();
   }
@@ -175,21 +183,31 @@ CPseudonymizerRules::CPseudonymizerRules() : QHash<QString, CPseudonymizerRule>(
 CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash<QString, CPseudonymizerRule>() {
   _result = ReturnCode::SUCCESS;
 
+  // Does the rules file exist?
+  //---------------------------
   if( !QFileInfo::exists( rulesFileName ) ) {
     _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     return;
   }
 
-  QString errMsgTxt, errMsgXls, errMsgXlsx;
+  // Determine the file format and read it
+  //--------------------------------------
+  QString errMsg;
+  bool error;
+  QString fileTypeInfo;
+  fileTypeInfo = magicFileTypeInfo( rulesFileName, &error, &errMsg );
 
-  bool isTextFile = magicIsAsciiTextFile( rulesFileName, nullptr, nullptr, &errMsgTxt );
-  bool isXlsFile = magicIsXlsFile( rulesFileName, nullptr, nullptr, &errMsgXls );
-  bool isXlsxFile = magicIsXlsxFile( rulesFileName, nullptr, nullptr, &errMsgXlsx );
+  if( error ) {
+    _errMsgs.append( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
+    _errMsgs.append( errMsg );
+    _result = ( _result | ReturnCode::FATAL_ERROR );
+    return;
+  }
 
   QCsv csv;
 
-  if( isTextFile ) {
+  if( magicStringShowsAsciiTextFile( fileTypeInfo ) ) {
     csv = QCsv( rulesFileName, true, true, QCsv::EntireFile, true );
     if( QCsv::ERROR_NONE != csv.error() ) {
       _errMsgs.append( QStringLiteral("Rules CSV file could not be processed. Please check the file format:") );
@@ -197,8 +215,16 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
   }
-  else if( isXlsFile || isXlsxFile ) {
-    csv = csvFromSpreadsheet( rulesFileName );
+  else if( magicStringShowsXlsxFile( fileTypeInfo, rulesFileName ) ) {
+    csv = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format2007 );
+    if( QCsv::ERROR_NONE != csv.error() ) {
+      _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
+      _errMsgs.append( csv.errorMsg() );
+      _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
+    }
+  }
+  else if( magicStringShowsXlsFile( fileTypeInfo ) ) {
+    csv = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format97_2003 );
     if( QCsv::ERROR_NONE != csv.error() ) {
       _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
       _errMsgs.append( csv.errorMsg() );
@@ -214,6 +240,35 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
     return;
   }
 
+  // Check that the rules file has the right columns
+  //------------------------------------------------
+  QStringList tmpFieldNames;
+  foreach( const QString& fieldName, csv.fieldNames() ) {
+    tmpFieldNames.append( fieldName.toLower() );
+  }
+
+  if( !tmpFieldNames.contains( QStringLiteral("fieldname")) ) {
+    _errMsgs.append( QStringLiteral("Rules file is missing the required 'FieldName' column.") );
+    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
+  }
+
+  tmpFieldNames.removeOne( QStringLiteral("FieldName").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("GeneratePseudonym").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("RequiredField").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("ValidateField").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("ValidationRegExp").toLower() );
+
+  if( 0 != tmpFieldNames.count() ) {
+    _errMsgs.append( QStringLiteral("Columns in the rules file are not named correctly.") );
+    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
+  }
+
+  if( ReturnCode::SUCCESS != _result ) {
+    return;
+  }
+
+  // Generate rules from the rules file
+  //-----------------------------------
   csv.toFront();
   while( -1 != csv.moveNext() ) {
     CPseudonymizerRule rule( &csv );
@@ -222,7 +277,7 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
 
     if( !rule.isValid() ) {
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
-      _errMsgs.append( rule.errorMessage() );
+      _errMsgs.append( rule.errorMessages() );
     }
 
     this->insert( rule.fieldName().toLower(), rule );
@@ -245,4 +300,12 @@ CPseudonymizerRules& CPseudonymizerRules::operator=( const CPseudonymizerRules& 
   _errMsgs = other._errMsgs;
 
   return *this;
+}
+
+
+void CPseudonymizerRules::debug() const {
+  foreach( const CPseudonymizerRule& rule, *this ) {
+    rule.debug();
+    qDb() << endl;
+  }
 }

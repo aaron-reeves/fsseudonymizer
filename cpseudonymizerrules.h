@@ -34,9 +34,9 @@ class CPseudonymizerRule {
     QRegExp validationRegExp( void ) const { return _validationRegExp; }
 
     bool isValid() const { return _isValid; }
-    QString errorMessage() const { return QStringLiteral( "Line %1: %2" ).arg( _rowNumber ).arg( _errMsgs.join( QStringLiteral( " " ) ) ); }
+    QStringList errorMessages() const { return _errMsgs; }
 
-    QVariant process( const QVariant& val, const QString& passphrase, bool& error, QString& errMsg ) const;
+    QVariant process( const QVariant& val, const QString& passphrase, bool& error, QStringList& errMsgs ) const;
 
     void debug() const;
 
@@ -73,12 +73,14 @@ class CPseudonymizerRules : public QHash<QString, CPseudonymizerRule> {
 
     QStringList errorMessages() const { return _errMsgs; }
 
+    void debug() const;
+
   protected:
     int _result;
     QStringList _fieldNames;
     QStringList _errMsgs;
 
-    QCsv csvFromSpreadsheet( const QString& rulesFileName );
+    QCsv csvFromSpreadsheet( const QString& rulesFileName, const CSpreadsheetWorkBook::SpreadsheetFileFormat format );
 };
 
 #endif // CPSEUDONYMIZERRULES_H

@@ -64,7 +64,7 @@ void setupCmdArgs( QCommandLineParser* cmd, QCoreApplication* app ) {
   cmd->addOption( cmdConfigPath );
   QCommandLineOption cmdOutputPath(
     QStringList() << QStringLiteral("o") << QStringLiteral("output"),
-    QStringLiteral("Ouput file path. Optional, defaults to <input file path>-pseudonymized.csv|xlsx."),
+    QStringLiteral("Ouput file path. Optional, defaults to <inputFilePath>-pseudonymized.csv|xlsx."),
     QStringLiteral("outputFilePath")
   );
   cmd->addOption( cmdOutputPath );
@@ -189,6 +189,10 @@ int main(int argc, char *argv[]) {
     //----------------
     CProcessor processor( params );
     result = ( result | processor.result() );
+
+    if( ReturnCode::SUCCESS == result ) {
+      result = ( result | processor.run() );
+    }
 
     // Display errors to console, if requested
     //----------------------------------------

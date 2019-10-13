@@ -27,14 +27,16 @@ TEMPLATE = app
 #CONFIG += gui_application
 ## !!!-----------------------
 
+
+## !!!-------------------------------------------------------------------------------------------------
 # Definitions for the application name and version
-## !!!--------------------------------------------
+## !!!-------------------------------------------------------------------------------------------------
 VERSION = "1.0.0.20191012" ## !!! Remember when updating version numbers to also update the RC file !!!
 VERSION_SHORT = 1.0.0      ## !!! Remember when updating version numbers to also update the RC file !!!
 DATE = "12-Oct-2019"       ## !!! Remember when updating version numbers to also update the RC file !!!
 
 RC_FILE = XLPseudonymizer.rc
-## !!!----------------------------------------------------------------------
+## !!!-------------------------------------------------------------------------------------------------
 
 DEFINES += \
   APP_VERSION=\\\"$$VERSION\\\" \
@@ -102,8 +104,7 @@ SOURCES += \
   sharedCode/ar_general_purpose/log.cpp \
   sharedCode/ar_general_purpose/filemagic.cpp \
   sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
-  sharedCode/ar_general_purpose/xlcsv.h \
-  sharedCode/ar_general_purpose/ctwodarray.h \
+  sharedCode/ar_general_purpose/debugutils.cpp \
   cprocessor.cpp
 
 HEADERS += \
@@ -116,6 +117,7 @@ HEADERS += \
   sharedCode/ar_general_purpose/cspreadsheetarray.h \
   sharedCode/ar_general_purpose/xlcsv.h \
   sharedCode/ar_general_purpose/ctwodarray.h \
+  sharedCode/ar_general_purpose/debugutils.h \
   cprocessor.h \
   cpseudonymizerrules.h
 

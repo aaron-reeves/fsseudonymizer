@@ -31,7 +31,7 @@ class CProcessor {
     QStringList errorMessages() const { return _errMsgs; }
 
   protected:
-    CTwoDArray<QVariant> getData( const QString& inputFileName );
+    void getData( const QString& inputFileName );
 
     CPseudonymizerRules _rules;
     CTwoDArray<QVariant> _data;
