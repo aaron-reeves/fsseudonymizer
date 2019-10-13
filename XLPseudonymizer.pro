@@ -24,7 +24,7 @@ TEMPLATE = app
 ## !!!-----------------------
 ## !!! For a GUI application:
 ## !!!-----------------------
-#CONFIG += gui_application
+CONFIG += gui_application
 ## !!!-----------------------
 
 
@@ -95,8 +95,6 @@ INCLUDEPATH += sharedCode
 
 
 SOURCES += \
-  cpseudonymizerrules.cpp \
-  customprocessing.cpp \
   main.cpp\
   sharedCode/ar_general_purpose/cfilelist.cpp \
   sharedCode/ar_general_purpose/returncodes.cpp \
@@ -107,10 +105,13 @@ SOURCES += \
   sharedCode/ar_general_purpose/filemagic.cpp \
   sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
   sharedCode/ar_general_purpose/debugutils.cpp \
-  cprocessor.cpp
+  cpseudonymizerrules.cpp \
+  customprocessing.cpp \
+  cprocessor.cpp \
+  sharedCode/qt_widgets/qclickablelabel.cpp
 
 HEADERS += \
-  customprocessing.h \
+  globals.h \
   sharedCode/ar_general_purpose/cfilelist.h \
   sharedCode/ar_general_purpose/returncodes.h \
   sharedCode/ar_general_purpose/csv.h \
@@ -122,33 +123,36 @@ HEADERS += \
   sharedCode/ar_general_purpose/xlcsv.h \
   sharedCode/ar_general_purpose/ctwodarray.h \
   sharedCode/ar_general_purpose/debugutils.h \
+  cpseudonymizerrules.h \
+  customprocessing.h \
   cprocessor.h \
-  cpseudonymizerrules.h
+  sharedCode/qt_widgets/qclickablelabel.h
 
 console {
   # Nothing to do in here.
 } else {
   SOURCES += \
-    cmainwindow.cpp \
-    qt_widgets/cfileselect.cpp \
-    qt_widgets/cmessagedialog.cpp \
-    caboutdialog.cpp
+    gui/cmainwindow.cpp \
+    sharedCode/qt_widgets/cfileselect.cpp \
+    sharedCode/qt_widgets/cmessagedialog.cpp \
+    sharedCode/qt_widgets/caboutform.cpp
 
   HEADERS += \
-    cmainwindow.h \
-    qt_widgets/cfileselect.h \
-    qt_widgets/cmessagedialog.h \
-    caboutdialog.h
+    gui/cmainwindow.h \
+    sharedCode/qt_widgets/cfileselect.h \
+    sharedCode/qt_widgets/cmessagedialog.h \
+    sharedCode/qt_widgets/caboutform.h
 
   FORMS += \
-    cmainwindow.ui \
-    qt_widgets/cfileselect.ui \
-    qt_widgets/cmessagedialog.ui \
-    caboutdialog.ui
+    gui/cmainwindow.ui \
+    sharedCode/qt_widgets/cfileselect.ui \
+    sharedCode/qt_widgets/cmessagedialog.ui \
+    sharedCode/qt_widgets/caboutform.ui
 }
 
 #RESOURCES += \
 #    xlpseudonymizer.qrc
+
 
 
 

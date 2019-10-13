@@ -22,7 +22,7 @@ Public License as published by the Free Software Foundation; either version 2 of
   #include <QApplication>
   #include <QtCore>
   #include <QtGui>
-  #include "cmainwindow.h"
+  #include "gui/cmainwindow.h"
 #endif
 
 #include <ar_general_purpose/returncodes.h>
@@ -191,7 +191,15 @@ int main(int argc, char *argv[]) {
     result = ( result | processor.result() );
 
     if( ReturnCode::SUCCESS == result ) {
-      result = ( result | processor.run() );
+      result = ( result | processor.readRules() );
+    }
+
+    if( ReturnCode::SUCCESS == result ) {
+      result = ( result | processor.readData() );
+    }
+
+    if( ReturnCode::SUCCESS == result ) {
+      result = ( result | processor.process() );
     }
 
     // Write output file

@@ -33,7 +33,10 @@ class CProcessor : public QObject {
     CProcessor( const QHash<QString, QString>& params, QObject* parent = nullptr );
     ~CProcessor();
 
-    int run();
+    int readRules();
+    int readData();
+
+    int process();
 
     int writeOutput();
 

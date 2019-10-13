@@ -26,6 +26,55 @@ void CProcessor::slotSetStageSteps( const QString& unused, const qint64 nSteps )
 }
 
 
+CProcessor::CProcessor( const QHash<QString, QString>& params, QObject* parent /* = nullptr */ ) : QObject( parent ) {
+  _result = ReturnCode::SUCCESS;
+  _inputDataFormat = FormatUnspecified;
+  _rules = nullptr;
+
+  _params = params;
+
+  if( !QFileInfo::exists( params.value( QStringLiteral("rules") ) ) ) {
+    _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
+    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
+  }
+
+  if( !QFileInfo::exists( params.value( QStringLiteral("input") ) ) ) {
+    _errMsgs.append( QStringLiteral("Selected input file does not exist.") );
+    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
+  }
+}
+
+
+CProcessor::~CProcessor() {
+  if( nullptr != _rules )
+    delete _rules;
+}
+
+
+int CProcessor::readRules() {
+  if( !( ReturnCode::SUCCESS == _result ) ) {
+    return _result;
+  }
+
+  emit stageStarted( QStringLiteral( "Reading rules file..." ) );
+  emit setStageStepComplete( 0 );
+
+  _rules = new CPseudonymizerRules();
+
+  _rules->readFile( _params.value( QStringLiteral("rules") ) );
+  _errMsgs.append( _rules->errorMessages() );
+
+  emit stageComplete();
+
+  //qDebug() << "Rules:";
+  //_rules->debug();
+
+  _result = ( _result | _rules->result() );
+
+  return _result;
+}
+
+
 void CProcessor::getData( const QString& inputFileName ) {
   // Determine the file format and read it
   //--------------------------------------
@@ -120,54 +169,15 @@ void CProcessor::getData( const QString& inputFileName ) {
 }
 
 
-CProcessor::CProcessor(const QHash<QString, QString>& params , QObject* parent /* = nullptr */ ) : QObject( parent ) {
-  _result = ReturnCode::SUCCESS;
-  _inputDataFormat = FormatUnspecified;
-  _rules = nullptr;
-
-  _params = params;
-
-  if( !QFileInfo::exists( params.value( QStringLiteral("rules") ) ) ) {
-    _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
-    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
-  }
-
-  if( !QFileInfo::exists( params.value( QStringLiteral("input") ) ) ) {
-    _errMsgs.append( QStringLiteral("Selected input file does not exist.") );
-    _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
-  }
-
+int CProcessor::readData() {
   if( !( ReturnCode::SUCCESS == _result ) ) {
-    return;
+    return _result;
   }
 
-  // Read the rules file
-  //--------------------
-  emit stageStarted( QStringLiteral( "Reading rules file..." ) );
-
-  _rules = new CPseudonymizerRules();
-
-  _rules->readFile( params.value( QStringLiteral("rules") ) );
-  _errMsgs.append( _rules->errorMessages() );
-
-  emit stageComplete();
-
-  //qDebug() << "Rules:";
-  //_rules->debug();
-
-  _result = ( _result | _rules->result() );
-
-  if( !( ReturnCode::SUCCESS == _result ) ) {
-    return;
-  }
-
-  // Read the data file
-  //-------------------
   emit stageStarted( QStringLiteral( "Reading data file..." ) );
+  emit setStageStepComplete( 0 );
 
-  getData( params.value( QStringLiteral("input") ) );
-  //qDebug() << "Data:";
-  //debugArray( _data );
+  getData( _params.value( QStringLiteral("input") ) );
 
   if( ReturnCode::SUCCESS == _result ) {
     foreach( const QString& fieldName, _rules->fieldNames() ) {
@@ -180,17 +190,11 @@ CProcessor::CProcessor(const QHash<QString, QString>& params , QObject* parent /
 
   emit stageComplete();
 
-  //qDebug() << "Result after construction:" << _result;
+  return _result;
 }
 
 
-CProcessor::~CProcessor() {
-  if( nullptr != _rules )
-    delete _rules;
-}
-
-
-int CProcessor::run() {
+int CProcessor::process() {
   _pseudonymizedData.clear();
 
   if( ReturnCode::SUCCESS != _result ) {
@@ -208,6 +212,7 @@ int CProcessor::run() {
   _pseudonymizedData.setColNames( _data.colNames() );
 
   emit stageStarted( QStringLiteral( "Processing data..." ) );
+  emit setStageStepComplete( 0 );
   emit setStageSteps( _data.nRows() );
 
   for( int r = 0; r < _data.nRows(); ++r ) {
@@ -333,6 +338,7 @@ QStringList CProcessor::fileHeader() {
 
 void CProcessor::writeOutputXlsx( const QString& outputFileName ) {
   emit stageStarted( QStringLiteral("Writing output file...") );
+  emit setStageStepComplete( 0 );
 
   CSpreadsheet sheet( _pseudonymizedData );
 
@@ -364,6 +370,7 @@ void CProcessor::writeOutputCsv( const QString& outputFileName ) {
   }
 
   emit stageStarted( QStringLiteral("Writing output file...") );
+  emit setStageStepComplete( 0 );
   emit setStageSteps( _pseudonymizedData.nRows() );
 
   QTextStream out(&file);
