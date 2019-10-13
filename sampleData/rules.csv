@@ -1,0 +1,5 @@
+FieldName,GeneratePseudonym,RequiredField,ValidateField,ValidationRegExp
+Name,Yes,Yes,No,
+Age,No,Yes,Yes,"[0-9]{1,3}"
+Height-inches,No,Yes,Yes,"[0-9]{1,3}"
+Weight-pounds,No,Yes,Yes,"[0-9]{1,3}"
