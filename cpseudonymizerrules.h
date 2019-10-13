@@ -40,11 +40,11 @@ class CPseudonymizerRule {
 
     void debug() const;
 
+    static QString sha( const QString& value, const QString& passphrase );
+
   protected:
     void initialize();
     void assign( const CPseudonymizerRule& other );
-
-    QString sha( const QString& value, const QString& passphrase ) const;
 
     int _rowNumber;
 
@@ -59,13 +59,17 @@ class CPseudonymizerRule {
 };
 
 
-class CPseudonymizerRules : public QHash<QString, CPseudonymizerRule> {
+class CPseudonymizerRules : public QObject, public QHash<QString, CPseudonymizerRule> {
+  Q_OBJECT
+
   public:
-    CPseudonymizerRules();
-    CPseudonymizerRules( const QString& rulesFileName );
-    CPseudonymizerRules( const CPseudonymizerRules& other );
-    CPseudonymizerRules& operator=( const CPseudonymizerRules& other );
+    CPseudonymizerRules( QObject* parent = nullptr );
+//    CPseudonymizerRules( const QString& rulesFileName );
+//    CPseudonymizerRules( const CPseudonymizerRules& other );
+//    CPseudonymizerRules& operator=( const CPseudonymizerRules& other );
     ~CPseudonymizerRules() { /* Nothing to do here. */ }
+
+    int readFile( const QString& rulesFileName );
 
     int result() const { return _result; }
 
@@ -75,12 +79,22 @@ class CPseudonymizerRules : public QHash<QString, CPseudonymizerRule> {
 
     void debug() const;
 
+  signals:
+    void setStageSteps( const qint64 nSteps );
+    void setStageStepComplete( const int step );
+
+  protected slots:
+    void slotSetStageSteps( const QString& unused, const qint64 nSteps );
+
   protected:
     int _result;
     QStringList _fieldNames;
     QStringList _errMsgs;
 
     QCsv csvFromSpreadsheet( const QString& rulesFileName, const CSpreadsheetWorkBook::SpreadsheetFileFormat format );
+
+  private:
+    Q_DISABLE_COPY( CPseudonymizerRules )
 };
 
 #endif // CPSEUDONYMIZERRULES_H

@@ -131,7 +131,7 @@ QHash<QString, QString> processCmdArgs( QCommandLineParser* cmd, bool& error, QS
   }
 
   if( cmd->isSet( QStringLiteral("username") ) )
-    params.insert( QStringLiteral("userName"), cmd->value( QStringLiteral("username") ) );
+    params.insert( QStringLiteral("username"), cmd->value( QStringLiteral("username") ) );
 
   if( cmd->isSet( QStringLiteral("email") ) )
     params.insert( QStringLiteral("email"), cmd->value( QStringLiteral("email") ) );
@@ -192,6 +192,12 @@ int main(int argc, char *argv[]) {
 
     if( ReturnCode::SUCCESS == result ) {
       result = ( result | processor.run() );
+    }
+
+    // Write output file
+    //------------------
+    if( ReturnCode::SUCCESS == result ) {
+      result = ( result | processor.writeOutput() );
     }
 
     // Display errors to console, if requested

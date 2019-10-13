@@ -20,21 +20,45 @@ Public License as published by the Free Software Foundation; either version 2 of
 
 #include "cpseudonymizerrules.h"
 
-class CProcessor {
+class CProcessor : public QObject {
+    Q_OBJECT
+
   public:
-    CProcessor( const QHash<QString, QString>& params );
-    ~CProcessor() { /* Nothing to do here */ }
+    enum CProcessorDataFormat {
+      FormatUnspecified,
+      FormatCSV,
+      FormatExcel
+    };
+
+    CProcessor( const QHash<QString, QString>& params, QObject* parent = nullptr );
+    ~CProcessor();
 
     int run();
+
+    int writeOutput();
 
     int result() const { return _result; }
     QStringList errorMessages() const { return _errMsgs; }
 
+  signals:
+    void stageStarted( const QString& stageDescr );
+    void setStageSteps( const qint64 nSteps );
+    void setStageStepComplete( const int step );
+    void stageComplete();
+
+  protected slots:
+    void slotSetStageSteps( const QString& unused, const qint64 nSteps );
+
   protected:
     void getData( const QString& inputFileName );
 
-    CPseudonymizerRules _rules;
+    QStringList fileHeader();
+    void writeOutputXlsx( const QString& outputFileName );
+    void writeOutputCsv( const QString& outputFileName );
+
+    CPseudonymizerRules* _rules;
     CTwoDArray<QVariant> _data;
+    int _inputDataFormat;
 
     CTwoDArray<QVariant> _pseudonymizedData;
 

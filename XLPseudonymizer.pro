@@ -96,7 +96,9 @@ INCLUDEPATH += sharedCode
 
 SOURCES += \
   cpseudonymizerrules.cpp \
+  customprocessing.cpp \
   main.cpp\
+  sharedCode/ar_general_purpose/cfilelist.cpp \
   sharedCode/ar_general_purpose/returncodes.cpp \
   sharedCode/ar_general_purpose/csv.cpp \
   sharedCode/ar_general_purpose/strutils.cpp \
@@ -108,6 +110,8 @@ SOURCES += \
   cprocessor.cpp
 
 HEADERS += \
+  customprocessing.h \
+  sharedCode/ar_general_purpose/cfilelist.h \
   sharedCode/ar_general_purpose/returncodes.h \
   sharedCode/ar_general_purpose/csv.h \
   sharedCode/ar_general_purpose/strutils.h \

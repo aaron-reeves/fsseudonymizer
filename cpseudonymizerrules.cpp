@@ -95,7 +95,7 @@ void CPseudonymizerRule::assign( const CPseudonymizerRule& other ) {
 }
 
 
-QString CPseudonymizerRule::sha( const QString& value, const QString& passphrase ) const {
+QString CPseudonymizerRule::sha( const QString& value, const QString& passphrase ) {
   QString tmp = QStringLiteral( "%1 %2" ).arg( passphrase, value );
   return QString( QCryptographicHash::hash( tmp.toLatin1(), QCryptographicHash::Sha224 ).toHex() );
 }
@@ -139,10 +139,18 @@ void CPseudonymizerRule::debug() const {
 }
 
 
+void CPseudonymizerRules::slotSetStageSteps( const QString& unused, const qint64 nSteps ) {
+  Q_UNUSED( unused )
+  emit setStageSteps( nSteps );
+}
+
+
 QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName, const CSpreadsheetWorkBook::SpreadsheetFileFormat format ) {
   QCsv csv;
 
   CSpreadsheetWorkBook wb( format, rulesFileName );
+  connect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+  connect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
 
   // The spreadsheet file should have exactly 1 sheet that contains data.
   // If this is not the case, we don't currently know what to do.
@@ -171,16 +179,23 @@ QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName, cons
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
+  disconnect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+  disconnect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
+
   return csv;
 }
 
 
-CPseudonymizerRules::CPseudonymizerRules() : QHash<QString, CPseudonymizerRule>() {
+CPseudonymizerRules::CPseudonymizerRules(QObject* parent /* = nullptr */) : QObject( parent ), QHash<QString, CPseudonymizerRule>() {
   _result = ReturnCode::UNKNOWN_RESULT;
 }
 
 
-CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash<QString, CPseudonymizerRule>() {
+//CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QObject( parent ), QHash<QString, CPseudonymizerRule>() {
+//  readFile( rulesFileName );
+//}
+
+int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
   _result = ReturnCode::SUCCESS;
 
   // Does the rules file exist?
@@ -188,7 +203,7 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
   if( !QFileInfo::exists( rulesFileName ) ) {
     _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
-    return;
+    return _result;
   }
 
   // Determine the file format and read it
@@ -202,34 +217,45 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
     _errMsgs.append( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
     _errMsgs.append( errMsg );
     _result = ( _result | ReturnCode::FATAL_ERROR );
-    return;
+    return _result;
   }
 
-  QCsv csv;
+  QCsv* csv = nullptr;
+  QCsvObject* csvObj = nullptr;
+  QCsv csvSpreadsheet;
+  bool csvCreated = false;
 
   if( magicStringShowsAsciiTextFile( fileTypeInfo ) ) {
-    csv = QCsv( rulesFileName, true, true, QCsv::EntireFile, true );
-    if( QCsv::ERROR_NONE != csv.error() ) {
+    emit setStageSteps( QFileInfo( rulesFileName ).size() );
+
+    csvObj = new QCsvObject( rulesFileName, true, true, QCsv::EntireFile, true );
+    connect( csvObj, SIGNAL( nBytesRead( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
+
+    csvCreated = true;
+    if( QCsv::ERROR_NONE != csvObj->error() ) {
       _errMsgs.append( QStringLiteral("Rules CSV file could not be processed. Please check the file format:") );
-      _errMsgs.append( csv.errorMsg() );
+      _errMsgs.append( csvObj->errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
+    csv = csvObj;
   }
   else if( magicStringShowsXlsxFile( fileTypeInfo, rulesFileName ) ) {
-    csv = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format2007 );
-    if( QCsv::ERROR_NONE != csv.error() ) {
+    csvSpreadsheet = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format2007 );
+    if( QCsv::ERROR_NONE != csvSpreadsheet.error() ) {
       _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
-      _errMsgs.append( csv.errorMsg() );
+      _errMsgs.append( csvSpreadsheet.errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
+    csv = &csvSpreadsheet;
   }
   else if( magicStringShowsXlsFile( fileTypeInfo ) ) {
-    csv = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format97_2003 );
-    if( QCsv::ERROR_NONE != csv.error() ) {
+    csvSpreadsheet = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format97_2003 );
+    if( QCsv::ERROR_NONE != csvSpreadsheet.error() ) {
       _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
-      _errMsgs.append( csv.errorMsg() );
+      _errMsgs.append( csvSpreadsheet.errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
+    csv = &csvSpreadsheet;
   }
   else {
     _errMsgs.append( QStringLiteral("Rules file type is unrecognized or unsupported.") );
@@ -237,13 +263,18 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
   }
 
   if( ReturnCode::SUCCESS != _result ) {
-    return;
+    if( csvCreated ) {
+      disconnect( csvObj, SIGNAL( nBytesRead( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
+      delete csvObj;
+    }
+
+    return _result;
   }
 
   // Check that the rules file has the right columns
   //------------------------------------------------
   QStringList tmpFieldNames;
-  foreach( const QString& fieldName, csv.fieldNames() ) {
+  foreach( const QString& fieldName, csv->fieldNames() ) {
     tmpFieldNames.append( fieldName.toLower() );
   }
 
@@ -264,14 +295,19 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
   }
 
   if( ReturnCode::SUCCESS != _result ) {
-    return;
+    if( csvCreated ) {
+      disconnect( csvObj, SIGNAL( nBytesRead( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
+      delete csvObj;
+    }
+
+    return _result;
   }
 
   // Generate rules from the rules file
   //-----------------------------------
-  csv.toFront();
-  while( -1 != csv.moveNext() ) {
-    CPseudonymizerRule rule( &csv );
+  csv->toFront();
+  while( -1 != csv->moveNext() ) {
+    CPseudonymizerRule rule( csv );
 
     _fieldNames.append( rule.fieldName() );
 
@@ -282,30 +318,38 @@ CPseudonymizerRules::CPseudonymizerRules( const QString& rulesFileName ) : QHash
 
     this->insert( rule.fieldName().toLower(), rule );
   }
+
+  if( csvCreated ) {
+    disconnect( csvObj, SIGNAL( nBytesRead( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
+    delete csvObj;
+  }
+
+  return _result;
 }
 
 
-CPseudonymizerRules::CPseudonymizerRules( const CPseudonymizerRules& other ) : QHash<QString, CPseudonymizerRule>( other ) {
-  _result = other._result;
-  _fieldNames = other._fieldNames;
-  _errMsgs = other._errMsgs;
-}
+//CPseudonymizerRules::CPseudonymizerRules( const CPseudonymizerRules& other ) : QHash<QString, CPseudonymizerRule>( other ) {
+//  _result = other._result;
+//  _fieldNames = other._fieldNames;
+//  _errMsgs = other._errMsgs;
+//}
 
 
-CPseudonymizerRules& CPseudonymizerRules::operator=( const CPseudonymizerRules& other ) {
-  QHash<QString, CPseudonymizerRule>::operator=( other );
+//CPseudonymizerRules& CPseudonymizerRules::operator=( const CPseudonymizerRules& other ) {
+//  QHash<QString, CPseudonymizerRule>::operator=( other );
 
-  _result = other._result;
-  _fieldNames = other._fieldNames;
-  _errMsgs = other._errMsgs;
+//  _result = other._result;
+//  _fieldNames = other._fieldNames;
+//  _errMsgs = other._errMsgs;
 
-  return *this;
-}
+//  return *this;
+//}
 
 
 void CPseudonymizerRules::debug() const {
-  foreach( const CPseudonymizerRule& rule, *this ) {
-    rule.debug();
+  QHash<QString, CPseudonymizerRule>::const_iterator it;
+  for( it = this->begin(); it != this->end(); ++it ) {
+    it.value().debug();
     qDb() << endl;
   }
 }
