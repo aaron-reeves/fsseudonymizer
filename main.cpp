@@ -18,6 +18,8 @@ Public License as published by the Free Software Foundation; either version 2 of
   #include <ar_general_purpose/csv.h>
   #include <ar_general_purpose/cfilelist.h>
   #include <ar_general_purpose/qcout.h>
+  #include <ar_general_purpose/log.h>
+  #include <ar_general_purpose/returncodes.h>
 #else
   #include <QApplication>
   #include <QtCore>
@@ -25,8 +27,7 @@ Public License as published by the Free Software Foundation; either version 2 of
   #include "gui/cmainwindow.h"
 #endif
 
-#include <ar_general_purpose/returncodes.h>
-
+#include "globals.h"
 #include "cprocessor.h"
 
 #ifdef CONSOLE_APP
@@ -168,6 +169,14 @@ int main(int argc, char *argv[]) {
     app.setApplicationName( QStringLiteral( APP_NAME ) );
     app.setApplicationVersion( QStringLiteral( APP_VERSION ) );
 
+    // Set up the application log
+    //---------------------------
+    appLog.setAutoTruncate( false );
+    appLog.setConsoleEcho( true );
+    appLog.setUseSpacerLine( false );
+    appLog.setWindowsFriendly( true );
+    appLog.openLog( QStringLiteral("pseudonymizer.log"), LoggingTypical );
+
     // Define commandline arguments
     //-----------------------------
     QCommandLineParser cmd;
@@ -223,8 +232,11 @@ int main(int argc, char *argv[]) {
     return result;
   #else
     QApplication app(argc, argv);
-    app.setApplicationName( QStringLiteral( APP_NAME ) );
-    app.setApplicationVersion( QStringLiteral( APP_VERSION ) );
+    app.setApplicationName( CGlobals::AppName() );
+    app.setApplicationVersion( CGlobals::AppVersion() );
+    app.setOrganizationName( CGlobals::OrgName() );
+    app.setOrganizationDomain( CGlobals::OrgDomain() );
+
     CMainWindow w;
     w.show();
     return app.exec();

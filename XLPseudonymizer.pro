@@ -128,6 +128,7 @@ HEADERS += \
   cprocessor.h \
   sharedCode/qt_widgets/qclickablelabel.h
 
+
 console {
   # Nothing to do in here.
 } else {
@@ -150,8 +151,11 @@ console {
     sharedCode/qt_widgets/caboutform.ui
 }
 
-#RESOURCES += \
-#    xlpseudonymizer.qrc
+
+RESOURCES += \
+  images/images.qrc \
+  sampleRules/rules.qrc \
+  sharedCode/qt_widgets/qt_widgets.qrc
 
 
 

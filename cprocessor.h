@@ -30,7 +30,7 @@ class CProcessor : public QObject {
       FormatExcel
     };
 
-    CProcessor( const QHash<QString, QString>& params, QObject* parent = nullptr );
+    CProcessor( const QHash<QString, QString>& params, bool useResourceFile, QObject* parent = nullptr );
     ~CProcessor();
 
     int readRules();
@@ -41,16 +41,15 @@ class CProcessor : public QObject {
     int writeOutput();
 
     int result() const { return _result; }
-    QStringList errorMessages() const { return _errMsgs; }
 
   signals:
     void stageStarted( const QString& stageDescr );
-    void setStageSteps( const qint64 nSteps );
+    void setStageSteps( const int nSteps );
     void setStageStepComplete( const int step );
     void stageComplete();
 
   protected slots:
-    void slotSetStageSteps( const QString& unused, const qint64 nSteps );
+    void slotSetStageSteps( const QString& unused, const int nSteps );
 
   protected:
     void getData( const QString& inputFileName );
@@ -66,8 +65,8 @@ class CProcessor : public QObject {
     CTwoDArray<QVariant> _pseudonymizedData;
 
     int _result;
-    QStringList _errMsgs;
     QHash<QString, QString> _params;
+    bool _useResourceFile;
 
 
   private:

@@ -28,9 +28,11 @@ class CMainWindow : public QMainWindow {
 
   public:
     explicit CMainWindow(QWidget *parent = nullptr);
-    ~CMainWindow();
+    ~CMainWindow() override;
 
   protected slots:
+    void resourceWarning();
+
     void updateParams();
     void updateParams( const QString &unused );
     void process();
@@ -38,11 +40,21 @@ class CMainWindow : public QMainWindow {
     void about();
 
   protected:
+    void checkResourceForRules();
     void initializeParams();
     void setControlsEnabled( QWidget* widget, const bool val );
 
+    void readSettings();
+    void writeSettings();
+
+    void showEvent( QShowEvent* event ) override;
+
+    void closeEvent( QCloseEvent* event ) override;
+
     bool isTextFile();
 
+    bool _useRulesFileFromResource;
+    bool _resourceOK;
     QHash<QString, QString> _params;
 
   private:

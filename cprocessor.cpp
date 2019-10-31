@@ -20,26 +20,28 @@ Public License as published by the Free Software Foundation; either version 2 of
 
 #include "customprocessing.h"
 
-void CProcessor::slotSetStageSteps( const QString& unused, const qint64 nSteps ) {
+void CProcessor::slotSetStageSteps( const QString& unused, const int nSteps ) {
   Q_UNUSED( unused )
   emit setStageSteps( nSteps );
+  QCoreApplication::processEvents();
 }
 
 
-CProcessor::CProcessor( const QHash<QString, QString>& params, QObject* parent /* = nullptr */ ) : QObject( parent ) {
+CProcessor::CProcessor( const QHash<QString, QString>& params, bool useResourceFile, QObject* parent /* = nullptr */ ) : QObject( parent ) {
   _result = ReturnCode::SUCCESS;
   _inputDataFormat = FormatUnspecified;
   _rules = nullptr;
 
   _params = params;
+  _useResourceFile = useResourceFile;
 
   if( !QFileInfo::exists( params.value( QStringLiteral("rules") ) ) ) {
-    _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
+    logMsg( QStringLiteral("Selected rules file does not exist.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
   if( !QFileInfo::exists( params.value( QStringLiteral("input") ) ) ) {
-    _errMsgs.append( QStringLiteral("Selected input file does not exist.") );
+    logMsg( QStringLiteral("Selected input file does not exist.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 }
@@ -57,14 +59,14 @@ int CProcessor::readRules() {
   }
 
   emit stageStarted( QStringLiteral( "Reading rules file..." ) );
-  emit setStageStepComplete( 0 );
+  QCoreApplication::processEvents();
 
   _rules = new CPseudonymizerRules();
 
-  _rules->readFile( _params.value( QStringLiteral("rules") ) );
-  _errMsgs.append( _rules->errorMessages() );
+  _rules->readFile( _params.value( QStringLiteral("rules") ), _useResourceFile );
 
   emit stageComplete();
+  QCoreApplication::processEvents();
 
   //qDebug() << "Rules:";
   //_rules->debug();
@@ -84,8 +86,8 @@ void CProcessor::getData( const QString& inputFileName ) {
   fileTypeInfo = magicFileTypeInfo( inputFileName, &error, &errMsg );
 
   if( error ) {
-    _errMsgs.append( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
-    _errMsgs.append( errMsg );
+    logMsg( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
+    logMsg( errMsg );
     _result = ( _result | ReturnCode::FATAL_ERROR );
     return;
   }
@@ -93,14 +95,15 @@ void CProcessor::getData( const QString& inputFileName ) {
   // If the input file is a CSV file, read it
   //-----------------------------------------
   if( magicStringShowsAsciiTextFile( fileTypeInfo ) ) {
-    emit setStageSteps( QFileInfo( inputFileName ).size() );
+    emit setStageSteps( int( QFileInfo( inputFileName ).size() ) );
+    QCoreApplication::processEvents();
 
     QCsvObject csv( inputFileName, true, true, QCsv::EntireFile, true );
     connect( &csv, SIGNAL( nBytesRead( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
 
     if( QCsv::ERROR_NONE != csv.error() ) {
-      _errMsgs.append( QStringLiteral("Input CSV file could not be processed. Please check the file format:") );
-      _errMsgs.append( csv.errorMsg() );
+      logMsg( QStringLiteral("Input CSV file could not be processed. Please check the file format:") );
+      logMsg( csv.errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
     else {
@@ -125,7 +128,7 @@ void CProcessor::getData( const QString& inputFileName ) {
   //---------------------------------------------
   else if( magicStringShowsXlsxFile( fileTypeInfo, inputFileName ) || magicStringShowsXlsFile( fileTypeInfo ) ) {
     CSpreadsheetWorkBook wb( inputFileName );
-    connect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+    connect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, int ) ) );
     connect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
 
     // The spreadsheet file should have exactly 1 sheet that contains data.
@@ -144,26 +147,29 @@ void CProcessor::getData( const QString& inputFileName ) {
     }
 
     if( 1 == nFilledSheets ) {
+      wb.sheet( filledSheet ).trimEmptyRows();
+      wb.sheet( filledSheet ).trimEmptyColumns();
+
       _inputDataFormat = FormatExcel;
       _data = wb.sheet( filledSheet ).data( true );
     }
     else if( 0 == nFilledSheets ) {
-      _errMsgs.append( QStringLiteral("Selected input spreadsheet contains no data.") );
+      logMsg( QStringLiteral("Selected input spreadsheet contains no data.") );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
     else {
-      _errMsgs.append( QStringLiteral("Selected input spreadsheet contains multiple sheets.") );
+      logMsg( QStringLiteral("Selected input spreadsheet contains multiple sheets.") );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
 
-    disconnect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+    disconnect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, int ) ) );
     disconnect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
   }
 
   // If the file is something else, it's a problem
   //----------------------------------------------
   else {
-    _errMsgs.append( QStringLiteral("Input file type is unrecognized or unsupported.") );
+    logMsg( QStringLiteral("Input file type is unrecognized or unsupported.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 }
@@ -175,20 +181,21 @@ int CProcessor::readData() {
   }
 
   emit stageStarted( QStringLiteral( "Reading data file..." ) );
-  emit setStageStepComplete( 0 );
+  QCoreApplication::processEvents();
 
   getData( _params.value( QStringLiteral("input") ) );
 
   if( ReturnCode::SUCCESS == _result ) {
     foreach( const QString& fieldName, _rules->fieldNames() ) {
       if( !_data.colNames().contains( fieldName, Qt::CaseInsensitive ) ) {
-        _errMsgs.append( QStringLiteral( "Data file does not contain field '%1'").arg( fieldName ) );
+        logMsg( QStringLiteral( "Data file does not contain field '%1'").arg( fieldName ) );
         _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
       }
     }
   }
 
   emit stageComplete();
+  QCoreApplication::processEvents();
 
   return _result;
 }
@@ -212,8 +219,8 @@ int CProcessor::process() {
   _pseudonymizedData.setColNames( _data.colNames() );
 
   emit stageStarted( QStringLiteral( "Processing data..." ) );
-  emit setStageStepComplete( 0 );
   emit setStageSteps( _data.nRows() );
+  QCoreApplication::processEvents();
 
   for( int r = 0; r < _data.nRows(); ++r ) {
 
@@ -234,7 +241,8 @@ int CProcessor::process() {
 
         if( error ) {
           foreach( const QString& errMsg, errMsgs ) {
-            _errMsgs.append( QStringLiteral( "Input file line %1, field '%2': %3" ).arg( r+1 ).arg( _data.colNames().at(c), errMsg ) );
+            // r + 2: add one for indexing, and add another one for the header row
+            logMsg( QStringLiteral( "Input file line %1, field '%2': %3" ).arg( r+2 ).arg( _data.colNames().at(c), errMsg ) );
           }
           _result = ( _result | ReturnCode::DATA_VALIDATION_PROBLEM );
         }
@@ -254,6 +262,7 @@ int CProcessor::process() {
     //---------------------------------------------------------------------
 
     emit setStageStepComplete( r + 1 );
+    QCoreApplication::processEvents();
   }
 
   //-------------------------------------------------------------------
@@ -263,9 +272,10 @@ int CProcessor::process() {
   _result = ( _result | customPostProcessData( &_pseudonymizedData ) );
   //-------------------------------------------------------------------
 
-  debugArray( _pseudonymizedData );
+  //debugArray( _pseudonymizedData );
 
   emit stageComplete();
+  QCoreApplication::processEvents();
 
   return _result;
 }
@@ -275,6 +285,8 @@ int CProcessor::writeOutput() {
   if( ReturnCode::SUCCESS != _result ) {
     return _result;
   }
+
+  qDebug() << _params.value( QStringLiteral("output") );
 
   QString outputFileName;
   if(  _params.value( QStringLiteral("output") ).isEmpty() ) {
@@ -290,12 +302,12 @@ int CProcessor::writeOutput() {
   QFileInfo fi( outputFileName );
 
   if( fi.exists() && !QFileInfo( outputFileName ).isWritable() ) {
-    _errMsgs.append( QStringLiteral( "Cannot write to the selected output file (err 1). Please check your permissions." ) );
+    logMsg( QStringLiteral( "Cannot write to the selected output file (err 1). Please check your permissions." ) );
     _result = ( _result | ReturnCode::OUTPUT_FILE_PROBLEM );
     return _result;
   }
   else if( !QFileInfo( fi.dir().absolutePath() ).isWritable() ) {
-    _errMsgs.append( QStringLiteral( "Cannot write to the selected output file (err 2). Please check your permissions." ) );
+    logMsg( QStringLiteral( "Cannot write to the selected output file (err 2). Please check your permissions." ) );
     _result = ( _result | ReturnCode::OUTPUT_FILE_PROBLEM );
     return _result;
   }
@@ -338,7 +350,7 @@ QStringList CProcessor::fileHeader() {
 
 void CProcessor::writeOutputXlsx( const QString& outputFileName ) {
   emit stageStarted( QStringLiteral("Writing output file...") );
-  emit setStageStepComplete( 0 );
+  QCoreApplication::processEvents();
 
   CSpreadsheet sheet( _pseudonymizedData );
 
@@ -353,25 +365,26 @@ void CProcessor::writeOutputXlsx( const QString& outputFileName ) {
   }
 
   if( !sheet.writeXlsx( outputFileName, true ) ) {
-    _errMsgs.append( QStringLiteral( "Cannot write to the selected output file (err 3). Please check your permissions." ) );
+    logMsg( QStringLiteral( "Cannot write to the selected output file (err 3). Please check your permissions." ) );
     _result = ( _result | ReturnCode::OUTPUT_FILE_PROBLEM );
   }
 
   emit stageComplete();
+  QCoreApplication::processEvents();
 }
 
 
 void CProcessor::writeOutputCsv( const QString& outputFileName ) {
   QFile file( outputFileName );
   if( !file.open( QIODevice::WriteOnly ) ) {
-    _errMsgs.append( QStringLiteral( "Cannot write to the selected output file (err 4). Please check your permissions." ) );
+    logMsg( QStringLiteral( "Cannot write to the selected output file (err 4). Please check your permissions." ) );
     _result = ( _result | ReturnCode::OUTPUT_FILE_PROBLEM );
     return;
   }
 
   emit stageStarted( QStringLiteral("Writing output file...") );
-  emit setStageStepComplete( 0 );
   emit setStageSteps( _pseudonymizedData.nRows() );
+  QCoreApplication::processEvents();
 
   QTextStream out(&file);
   //if( !codec.isEmpty() )
@@ -398,11 +411,13 @@ void CProcessor::writeOutputCsv( const QString& outputFileName ) {
     out << output.join(  QChar( ',' ) ) << "\r\n";
 
     emit setStageStepComplete( r + 1 );
+    QCoreApplication::processEvents();
   }
 
   file.close();
 
   emit stageComplete();
+  QCoreApplication::processEvents();
 }
 
 

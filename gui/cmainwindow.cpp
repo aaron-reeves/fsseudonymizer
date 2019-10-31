@@ -18,6 +18,8 @@ Public License as published by the Free Software Foundation; either version 2 of
 
 #include <ar_general_purpose/filemagic.h>
 #include <ar_general_purpose/returncodes.h>
+#include <ar_general_purpose/cfilelist.h>
+#include <ar_general_purpose/log.h>
 
 #include <qt_widgets/cfileselect.h>
 #include <qt_widgets/cmessagedialog.h>
@@ -26,9 +28,29 @@ Public License as published by the Free Software Foundation; either version 2 of
 #include "globals.h"
 
 CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMainWindow) {
+  //appLog.openLog( QStringLiteral("pseudonymizer.log"), LoggingTypical );
+
+  initializeParams();
+
+  checkResourceForRules();
+
   ui->setupUi(this);
 
   this->setWindowTitle(qApp->applicationName() );
+
+  if( !_useRulesFileFromResource ) {
+    ui->fsRulesFile->setLabel( QStringLiteral("Rules file") );
+    ui->fsRulesFile->setMode( CFileSelect::ModeExistingFile | CFileSelect::ModeOpenFile );
+    ui->fsRulesFile->setStyleSheet( this->styleSheet() );
+    ui->fsRulesFile->setFilter( QStringLiteral("CSV (comma-delimited) files (*.csv);; Microsoft Excel spreadsheets (*.xls, *.xlsx);; All files (*.*)") );
+  }
+  else {
+    int currentHeight = ui->fsRulesFile->height();
+    ui->fsRulesFile->setGeometry( ui->fsRulesFile->x(), ui->fsRulesFile->y(), ui->fsRulesFile->width(), 0 );
+    ui->fsRulesFile->setVisible( false );
+    this->setMinimumHeight( this->minimumHeight() - currentHeight );
+    this->setGeometry( this->x(), this->y(), this->width(), this->height() - currentHeight );
+  }
 
   ui->fsInputFile->setLabel( QStringLiteral("Input file") );
   ui->fsInputFile->setMode( CFileSelect::ModeExistingFile | CFileSelect::ModeOpenFile );
@@ -40,37 +62,183 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
   ui->fsOutputFile->setStyleSheet( this->styleSheet() );
   ui->fsOutputFile->setFilter( QStringLiteral("CSV (comma-delimited) files (*.csv);; Microsoft Excel spreadsheets (*.xlsx);; All files (*.*)") );
 
-  ui->fsErrorFile->setLabel( QStringLiteral("Error log file") );
-  ui->fsErrorFile->setMode( CFileSelect::ModeAnyFile | CFileSelect::ModeSaveFile );
-  ui->fsErrorFile->setStyleSheet( this->styleSheet() );
-  ui->fsErrorFile->setFilter( QStringLiteral("Error log (plain-text) files (*.txt);; All files (*.*)") );
-  ui->fsErrorFile->setEnabled( false );
-
   ui->btnProcess->setEnabled( false );
 
-  ui->acnAbout->setText( QStringLiteral("%About %1").arg( CGlobals::AppName() ) );
+  ui->acnAbout->setText( QStringLiteral("&About %1").arg( CGlobals::AppName() ) );
   ui->acnAbout->setIconText( QStringLiteral("About %1").arg( CGlobals::AppName() ) );
   ui->acnAbout->setToolTip( QStringLiteral("About %1").arg( CGlobals::AppName() ) );
 
-  connect( ui->lePassPhrase, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->leUserName, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->leEmail, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->fsInputFile, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->fsOutputFile, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->fsErrorFile, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams( QString ) ) );
+  connect( ui->lePassPhrase, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->leUserName, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->leEmail, SIGNAL( textChanged( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->fsRulesFile, SIGNAL( pathNameChanged( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->fsInputFile, SIGNAL( pathNameChanged( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->fsOutputFile, SIGNAL( pathNameChanged( QString ) ), this, SLOT( updateParams() ) );
 
-  connect( ui->lePassPhrase, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->leUserName, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams( QString ) ) );
-  connect( ui->leEmail, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams( QString ) ) );
-
-  connect( ui->cbxWriteErrorLog, SIGNAL( clicked() ), this, SLOT( updateParams() ) );
+  connect( ui->lePassPhrase, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->leUserName, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams() ) );
+  connect( ui->leEmail, SIGNAL( textEdited( QString ) ), this, SLOT( updateParams() ) );
 
   connect( ui->btnProcess, SIGNAL( clicked() ), this, SLOT( process() ) );
 
   connect( ui->acnQuit, SIGNAL( triggered() ), qApp, SLOT( quit() ) );
   connect( ui->acnAbout, SIGNAL( triggered() ), this, SLOT( about() ) );
 
-  initializeParams();
+  readSettings();
+}
+
+
+void CMainWindow::checkResourceForRules() {
+  _resourceOK = true;
+  _useRulesFileFromResource = false;
+
+  CFileList fl( QStringLiteral(":/rules"), QStringLiteral("*.xlsx;*.csv;*.xls"), false );
+
+  int matchedFiles = 0;
+
+  #ifdef Q_OS_WIN
+    Qt::CaseSensitivity sens = Qt::CaseInsensitive;
+  #else
+    Qt::CaseSensitivity sens = Qt::CaseSensitive;
+  #endif
+
+  foreach( const CPathString& str, fl ) {
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.xlsx"), sens ) ) {
+      ++matchedFiles;
+      _useRulesFileFromResource = true;
+      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xlsx") );
+    }
+
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.csv"), sens ) ) {
+      ++matchedFiles;
+      _useRulesFileFromResource = true;
+      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.csv") );
+    }
+
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.xls"), sens ) ) {
+      ++matchedFiles;
+      _useRulesFileFromResource = true;
+      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xls") );
+    }
+  }
+
+  if( 1 < matchedFiles ) {
+    _params.remove( QStringLiteral("rules") );
+    _resourceOK = false;
+  }
+}
+
+
+void CMainWindow::readSettings() {
+  QSettings settings;
+
+  resize(settings.value( QStringLiteral("MainWindow/size"), QSize( this->width(), this->height() ) ).toSize() );
+  move( settings.value( QStringLiteral("MainWindow/pos"), QPoint( 200, 200 ) ).toPoint() );
+
+  QString tmp;
+
+  if( !_useRulesFileFromResource ) {
+    tmp = settings.value( QStringLiteral("FileLocations/rulesFile"), QString() ).toString();
+    if( !tmp.isEmpty() ) {
+      if( QFileInfo::exists( tmp ) ) {
+        ui->fsRulesFile->setPathName( tmp );
+        _params.insert( QStringLiteral("rules"), tmp );
+      }
+      else if( QFileInfo::exists( CPathString( tmp ).directory() )) {
+        ui->fsRulesFile->setDirectory( CPathString( tmp ).directory() );
+      }
+    }
+  }
+
+  tmp = settings.value( QStringLiteral("FileLocations/inputFile"), QString() ).toString();
+  if( !tmp.isEmpty() ) {
+    if( QFileInfo::exists( tmp ) ) {
+      ui->fsInputFile->setPathName( tmp );
+      _params.insert( QStringLiteral("input"), tmp );
+    }
+    else if( QFileInfo::exists( CPathString( tmp ).directory() )) {
+      ui->fsInputFile->setDirectory( CPathString( tmp ).directory() );
+    }
+  }
+
+  tmp = settings.value( QStringLiteral("FileLocations/outputFile"), QString() ).toString();
+  if( !tmp.isEmpty() ) {
+    if( QFileInfo::exists( CPathString( tmp ).directory() )) {
+      ui->fsOutputFile->setDirectory( CPathString( tmp ).directory() );
+    }
+  }
+
+  tmp = settings.value( QStringLiteral("EncryptionDetails/passphrase"), QString() ).toString();
+  if( !tmp.isEmpty() ) {
+    ui->lePassPhrase->setText( tmp );
+    _params.insert( QStringLiteral("passphrase"), tmp );
+  }
+
+  tmp = settings.value( QStringLiteral("UserInformation/username"), QString() ).toString();
+  if( !tmp.isEmpty() ) {
+    ui->leUserName->setText( tmp );
+    _params.insert( QStringLiteral("username"), tmp );
+  }
+
+  tmp = settings.value( QStringLiteral("UserInformation/email"), QString() ).toString();
+  if( !tmp.isEmpty() ) {
+    ui->leEmail->setText( tmp );
+    _params.insert( QStringLiteral("email"), tmp );
+  }
+}
+
+
+void CMainWindow::writeSettings() {
+  QSettings settings;
+
+  settings.setValue( QStringLiteral("MainWindow/size"), this->size() );
+  settings.setValue( QStringLiteral("MainWindow/pos"), this->pos() );
+
+  if( !_params.value(  QStringLiteral("input") ).isEmpty() )
+    settings.setValue( QStringLiteral("FileLocations/inputFile"), _params.value( QStringLiteral("input") ) );
+
+  if( !_useRulesFileFromResource && !_params.value(  QStringLiteral("rules") ).isEmpty() )
+    settings.setValue( QStringLiteral("FileLocations/rulesFile"), _params.value( QStringLiteral("rules") ) );
+
+  if( !_params.value(  QStringLiteral("output") ).isEmpty() )
+    settings.setValue( QStringLiteral("FileLocations/outputFile"), _params.value( QStringLiteral("output") ) );
+
+  if( !_params.value(  QStringLiteral("passphrase") ).isEmpty() )
+    settings.setValue( QStringLiteral("EncryptionDetails/passphrase"), _params.value( QStringLiteral("passphrase") ) );
+
+  if( !_params.value(  QStringLiteral("username") ).isEmpty() )
+    settings.setValue( QStringLiteral("UserInformation/username"), _params.value( QStringLiteral("username") ) );
+
+  if( !_params.value(  QStringLiteral("email") ).isEmpty() )
+    settings.setValue( QStringLiteral("UserInformation/email"), _params.value( QStringLiteral("email") ) );
+}
+
+
+void CMainWindow::showEvent( QShowEvent* event ) {
+  QMainWindow::showEvent( event );
+  QApplication::processEvents();
+
+  if( _useRulesFileFromResource && !_resourceOK ) {
+    this->setControlsEnabled( this, false );
+    QTimer::singleShot(50, this, SLOT(resourceWarning()));
+  }
+}
+
+
+void CMainWindow::resourceWarning() {
+  QMessageBox::critical(
+    this,
+    QStringLiteral("Problem with rules"),
+    QStringLiteral("There is a problem with the built-in rules file for this application.\n\nPlease consult with the developers.")
+  );
+
+  this->close();
+}
+
+
+void CMainWindow::closeEvent( QCloseEvent *event ) {
+  writeSettings();
+  event->accept();
 }
 
 
@@ -97,10 +265,43 @@ void CMainWindow::updateParams() {
 void CMainWindow::updateParams( const QString &unused ) {
   Q_UNUSED( unused )
 
-  qDebug() << "UPDATE PARAMS";
-
   bool emptyStr = false;
 
+  // List these in reverse order relative to the way they are displayed on the form.
+  // That way, the status bar message will walk users through everything in the right order.
+
+  // Output file name
+  //-----------------
+  if( ( 0 < ui->fsOutputFile->pathName().length() ) && !QFileInfo( ui->fsOutputFile->pathName() ).isDir() )
+    _params.insert( QStringLiteral("output"), ui->fsOutputFile->pathName() );
+  else {
+    this->statusBar()->showMessage( QStringLiteral("Please specify an output file name.") );
+    _params.insert( QStringLiteral("output"), QString() );
+    emptyStr = true;
+  }
+
+  // Email address
+  //--------------
+  if( 0 < ui->leEmail->text().trimmed().length() )
+    _params.insert( QStringLiteral("email"), ui->leEmail->text().trimmed() );
+  else {
+    this->statusBar()->showMessage( QStringLiteral("Please specify a valid email address.") );
+    _params.insert( QStringLiteral("email"), QString() );
+    emptyStr = true;
+  }
+
+  // User name
+  //----------
+  if( 0 < ui->leUserName->text().trimmed().length() )
+    _params.insert( QStringLiteral("username"), ui->leUserName->text().trimmed() );
+  else {
+    this->statusBar()->showMessage( QStringLiteral("Please specify a user name.") );
+    _params.insert( QStringLiteral("username"), QString() );
+    emptyStr = true;
+  }
+
+  // Pass phrase
+  //------------
   if( 0 < ui->lePassPhrase->text().trimmed().length() )
     _params.insert( QStringLiteral("passphrase"), ui->lePassPhrase->text().trimmed() );
   else {
@@ -108,51 +309,34 @@ void CMainWindow::updateParams( const QString &unused ) {
     emptyStr = true;
   }
 
+  // Rules file name
+  //----------------
+  if( !_useRulesFileFromResource ) {
+    //qDebug() << "Rules path:" << ui->fsRulesFile->pathName();
+    if( ( 0 < ui->fsRulesFile->pathName().length() ) && QFileInfo( ui->fsRulesFile->pathName() ).isFile() ) {
+      _params.insert( QStringLiteral("rules"), ui->fsRulesFile->pathName() );
+    }
+    else {
+      this->statusBar()->showMessage( QStringLiteral("Please specify a rules file name.") );
+      _params.insert( QStringLiteral("rules"), QString() );
+      emptyStr = true;
+    }
+  }
+
+  // Input file name
+  //----------------
   //qDebug() << "Input path:" << ui->fsInputFile->pathName();
-  if( 0 < ui->fsInputFile->pathName().length() )
+  if( ( 0 < ui->fsInputFile->pathName().length() ) && QFileInfo( ui->fsInputFile->pathName() ).isFile() )
     _params.insert( QStringLiteral("input"), ui->fsInputFile->pathName() );
   else {
+    this->statusBar()->showMessage( QStringLiteral("Please specify an input file name.") );
     _params.insert( QStringLiteral("input"), QString() );
     emptyStr = true;
   }
 
-  //qDebug() << "Output path:" << ui->fsOutputFile->pathName();
-  if( 0 < ui->fsOutputFile->pathName().length() )
-    _params.insert( QStringLiteral("output"), ui->fsOutputFile->pathName() );
-  else {
-    _params.insert( QStringLiteral("output"), QString() );
-    emptyStr = true;
+  if( !emptyStr ) {
+    this->statusBar()->showMessage( QStringLiteral("File is ready to process.") );
   }
-
-  if( 0 < ui->leUserName->text().trimmed().length() )
-    _params.insert( QStringLiteral("username"), ui->leUserName->text().trimmed() );
-  else {
-    _params.insert( QStringLiteral("username"), QString() );
-    emptyStr = true;
-  }
-
-  if( 0 < ui->leEmail->text().trimmed().length() )
-    _params.insert( QStringLiteral("email"), ui->leEmail->text().trimmed() );
-  else {
-    _params.insert( QStringLiteral("email"), QString() );
-    emptyStr = true;
-  }
-
-//  if( ui->cbxWriteErrorLog->isChecked() ) {
-//    _params.insert( QStringLiteral("logerrors"), true );
-//    ui->fsErrorFile->setEnabled( true );
-
-//    if( 0 < ui->fsErrorFile->pathName().length() )
-//      _params.insert( QStringLiteral("errPath"), ui->fsErrorFile->pathName() );
-//    else {
-//      _params.insert( QStringLiteral("errPath"), QString() );
-//      emptyStr = true;
-//    }
-//  }
-//  else {
-//    _params.insert( QStringLiteral("logerrors"), false );
-//    ui->fsErrorFile->setEnabled( false );
-//  }
 
   ui->btnProcess->setEnabled( !emptyStr );
 }
@@ -192,25 +376,30 @@ void CMainWindow::process() {
       return;
   }
 
-//  if( _params.value( QStringLiteral("logerrors") ).toBool() && QFile::exists( _params.value( QStringLiteral("errPath") ).toString() ) ) {
-//    int reply = QMessageBox::question(
-//      this,
-//      QStringLiteral("Overwrite err log file?"),
-//      QStringLiteral("An error log file with a matching name already exists in the selected folder.\n\nProceed and overwrite existing file?")
-//    );
-
-//    if( !( QMessageBox::Yes == reply ) )
-//      return;
-//  }
-
-
   this->setControlsEnabled( this, false );
 
-  CProcessor processor( _params );
+  CMessageDialog dlgErrors(
+    QStringLiteral("Could not process file"),
+    QStringLiteral("The following problems were encountered:"),
+    QMessageBox::Warning,
+    this
+  );
+  dlgErrors.setWindowModality( Qt::WindowModal );
+
+  connect( &appLog, SIGNAL( messageLogged( QString ) ), &dlgErrors, SLOT( append( QString ) ) );
+
+  this->statusBar()->clearMessage();
+
+  CProcessor processor( _params, _useRulesFileFromResource );
+
   QProgressDialog progress( this );
+
   connect( &processor, SIGNAL( stageStarted( const QString& ) ), &progress, SLOT( setLabelText( const QString& ) ) );
   connect( &processor, SIGNAL( setStageSteps( const int ) ), &progress, SLOT( setMaximum( const int ) ) );
   connect( &processor, SIGNAL( setStageStepComplete( const int ) ), &progress, SLOT( setValue( const int ) ) );
+
+  progress.setAutoReset( true );
+  progress.setAutoClose( false );
 
   int result = processor.result();
 
@@ -219,11 +408,13 @@ void CMainWindow::process() {
     result = ( result | processor.readRules() );
     progress.setValue( progress.maximum() );
   }
+  qDebug() << "readRules:" << result;
 
   if( ReturnCode::SUCCESS == result ) {
     result = ( result | processor.readData() );
     progress.setValue( progress.maximum() );
   }
+  qDebug() << "readData:" << result;
 
   if( ReturnCode::SUCCESS == result ) {
     result = ( result | processor.process() );
@@ -241,15 +432,7 @@ void CMainWindow::process() {
     QMessageBox::information( this, QStringLiteral("Success"), QStringLiteral("Data file was successfully processed, and output has been generated.") );
   }
   else {
-    CMessageDialog dlg(
-      QStringLiteral("Could not process file"),
-      QStringLiteral("The following problems were encountered:"),
-      QMessageBox::Warning,
-      this
-    );
-    dlg.setText( processor.errorMessages() );
-    dlg.setWindowModality( Qt::WindowModal );
-    dlg.show();
+    dlgErrors.exec();
   }
 
   this->setControlsEnabled( this, true );
@@ -267,8 +450,6 @@ void CMainWindow::setControlsEnabled( QWidget* widget, const bool val ) {
       setControlsEnabled( dynamic_cast<QWidget*>(widget->children().at(i)), val );
     }
   }
-
-  ui->fsErrorFile->setEnabled( ui->cbxWriteErrorLog->isChecked() );
 }
 
 

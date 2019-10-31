@@ -16,6 +16,7 @@ Public License as published by the Free Software Foundation; either version 2 of
 #include <ar_general_purpose/strutils.h>
 #include <ar_general_purpose/returncodes.h>
 #include <ar_general_purpose/filemagic.h>
+#include <ar_general_purpose/log.h>
 
 CPseudonymizerRule::CPseudonymizerRule() {
   initialize();
@@ -139,7 +140,7 @@ void CPseudonymizerRule::debug() const {
 }
 
 
-void CPseudonymizerRules::slotSetStageSteps( const QString& unused, const qint64 nSteps ) {
+void CPseudonymizerRules::slotSetStageSteps( const QString& unused, const int nSteps ) {
   Q_UNUSED( unused )
   emit setStageSteps( nSteps );
 }
@@ -149,7 +150,7 @@ QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName, cons
   QCsv csv;
 
   CSpreadsheetWorkBook wb( format, rulesFileName );
-  connect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+  connect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, int ) ) );
   connect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
 
   // The spreadsheet file should have exactly 1 sheet that contains data.
@@ -171,15 +172,15 @@ QCsv CPseudonymizerRules::csvFromSpreadsheet( const QString& rulesFileName, cons
     csv = wb.sheet( filledSheet ).asCsv( true );
   }
   else if( 0 == nFilledSheets ) {
-    _errMsgs.append( QStringLiteral("Selected rules spreadsheet contains no data.") );
+    logMsg( QStringLiteral("Selected rules spreadsheet contains no data.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
   else {
-    _errMsgs.append( QStringLiteral("Selected rules spreadsheet contains multiple sheets.") );
+    logMsg( QStringLiteral("Selected rules spreadsheet contains multiple sheets.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
-  disconnect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, qint64 ) ) );
+  disconnect( &wb, SIGNAL( operationStart( QString, int ) ), this, SLOT( slotSetStageSteps( QString, int ) ) );
   disconnect( &wb, SIGNAL( operationProgress( int ) ), this, SIGNAL( setStageStepComplete( int ) ) );
 
   return csv;
@@ -195,13 +196,13 @@ CPseudonymizerRules::CPseudonymizerRules(QObject* parent /* = nullptr */) : QObj
 //  readFile( rulesFileName );
 //}
 
-int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
+int CPseudonymizerRules::readFile( const QString &rulesFileName, const bool readFromResource ) {
   _result = ReturnCode::SUCCESS;
 
   // Does the rules file exist?
   //---------------------------
   if( !QFileInfo::exists( rulesFileName ) ) {
-    _errMsgs.append( QStringLiteral("Selected rules file does not exist.") );
+    logMsg( QStringLiteral("Selected rules file does not exist.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     return _result;
   }
@@ -210,12 +211,40 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
   //--------------------------------------
   QString errMsg;
   bool error;
-  QString fileTypeInfo;
-  fileTypeInfo = magicFileTypeInfo( rulesFileName, &error, &errMsg );
+  bool isCsvFile = false;
+  bool isXlsFile = false;
+  bool isXlsxFile = false;
+
+  if( !readFromResource ) {
+    QString fileTypeInfo = magicFileTypeInfo( rulesFileName, &error, &errMsg );
+
+    if( !error ) {
+      isCsvFile = magicStringShowsAsciiTextFile( fileTypeInfo );
+      isXlsxFile = magicStringShowsXlsxFile( fileTypeInfo, rulesFileName );
+      isXlsFile = magicStringShowsXlsFile( fileTypeInfo );
+
+      if( !( isCsvFile || isXlsFile || isXlsxFile ) ) {
+        error = true;
+        errMsg = QStringLiteral( "File type is not supported." );
+      }
+    }
+  }
+  else {
+    error = false;
+
+    isCsvFile = rulesFileName.endsWith( QStringLiteral(".csv"), Qt::CaseInsensitive );
+    isXlsFile = rulesFileName.endsWith( QStringLiteral(".xls"), Qt::CaseInsensitive );
+    isXlsxFile = rulesFileName.endsWith( QStringLiteral(".xlsx"), Qt::CaseInsensitive );
+
+    if( !( isCsvFile || isXlsFile || isXlsxFile ) ) {
+      error = true;
+      errMsg = QStringLiteral( "File type is not supported." );
+    }
+  }
 
   if( error ) {
-    _errMsgs.append( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
-    _errMsgs.append( errMsg );
+    logMsg( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
+    logMsg( errMsg );
     _result = ( _result | ReturnCode::FATAL_ERROR );
     return _result;
   }
@@ -225,7 +254,7 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
   QCsv csvSpreadsheet;
   bool csvCreated = false;
 
-  if( magicStringShowsAsciiTextFile( fileTypeInfo ) ) {
+  if( isCsvFile ) {
     emit setStageSteps( QFileInfo( rulesFileName ).size() );
 
     csvObj = new QCsvObject( rulesFileName, true, true, QCsv::EntireFile, true );
@@ -233,32 +262,32 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
 
     csvCreated = true;
     if( QCsv::ERROR_NONE != csvObj->error() ) {
-      _errMsgs.append( QStringLiteral("Rules CSV file could not be processed. Please check the file format:") );
-      _errMsgs.append( csvObj->errorMsg() );
+      logMsg( QStringLiteral("Rules CSV file could not be processed. Please check the file format:") );
+      logMsg( csvObj->errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
     csv = csvObj;
   }
-  else if( magicStringShowsXlsxFile( fileTypeInfo, rulesFileName ) ) {
+  else if( isXlsxFile ) {
     csvSpreadsheet = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format2007 );
     if( QCsv::ERROR_NONE != csvSpreadsheet.error() ) {
-      _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
-      _errMsgs.append( csvSpreadsheet.errorMsg() );
+      logMsg( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
+      logMsg( csvSpreadsheet.errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
     csv = &csvSpreadsheet;
   }
-  else if( magicStringShowsXlsFile( fileTypeInfo ) ) {
+  else if( isXlsFile ) {
     csvSpreadsheet = csvFromSpreadsheet( rulesFileName, CSpreadsheetWorkBook::Format97_2003 );
     if( QCsv::ERROR_NONE != csvSpreadsheet.error() ) {
-      _errMsgs.append( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
-      _errMsgs.append( csvSpreadsheet.errorMsg() );
+      logMsg( QStringLiteral("Rules Excel file could not be processed. Please check the file format:") );
+      logMsg( csvSpreadsheet.errorMsg() );
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
     }
     csv = &csvSpreadsheet;
   }
   else {
-    _errMsgs.append( QStringLiteral("Rules file type is unrecognized or unsupported.") );
+    logMsg( QStringLiteral("Rules file type is unrecognized or unsupported.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
@@ -279,7 +308,7 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
   }
 
   if( !tmpFieldNames.contains( QStringLiteral("fieldname")) ) {
-    _errMsgs.append( QStringLiteral("Rules file is missing the required 'FieldName' column.") );
+    logMsg( QStringLiteral("Rules file is missing the required 'FieldName' column.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
@@ -290,7 +319,7 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
   tmpFieldNames.removeOne( QStringLiteral("ValidationRegExp").toLower() );
 
   if( 0 != tmpFieldNames.count() ) {
-    _errMsgs.append( QStringLiteral("Columns in the rules file are not named correctly.") );
+    logMsg( QStringLiteral("Columns in the rules file are not named correctly.") );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 
@@ -313,7 +342,7 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName ) {
 
     if( !rule.isValid() ) {
       _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
-      _errMsgs.append( rule.errorMessages() );
+      logMsg( rule.errorMessages() );
     }
 
     this->insert( rule.fieldName().toLower(), rule );

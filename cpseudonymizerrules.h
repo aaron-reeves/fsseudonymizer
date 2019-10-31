@@ -69,13 +69,11 @@ class CPseudonymizerRules : public QObject, public QHash<QString, CPseudonymizer
 //    CPseudonymizerRules& operator=( const CPseudonymizerRules& other );
     ~CPseudonymizerRules() { /* Nothing to do here. */ }
 
-    int readFile( const QString& rulesFileName );
+    int readFile( const QString& rulesFileName, const bool readFromResource );
 
     int result() const { return _result; }
 
     QStringList fieldNames() const { return _fieldNames; }
-
-    QStringList errorMessages() const { return _errMsgs; }
 
     void debug() const;
 
@@ -84,12 +82,11 @@ class CPseudonymizerRules : public QObject, public QHash<QString, CPseudonymizer
     void setStageStepComplete( const int step );
 
   protected slots:
-    void slotSetStageSteps( const QString& unused, const qint64 nSteps );
+    void slotSetStageSteps( const QString& unused, const int nSteps );
 
   protected:
     int _result;
     QStringList _fieldNames;
-    QStringList _errMsgs;
 
     QCsv csvFromSpreadsheet( const QString& rulesFileName, const CSpreadsheetWorkBook::SpreadsheetFileFormat format );
 
