@@ -4,3 +4,6 @@
 [submodule "sharedCode/qt_widgets"]
 	path = sharedCode/qt_widgets
 	url = git@epidata.sruc.ac.uk:shared/qt_widgets.git
+[submodule "sharedCode/epic_general_purpose"]
+	path = sharedCode/epic_general_purpose
+	url = git@epidata.sruc.ac.uk:shared/epic_general_purpose.git
