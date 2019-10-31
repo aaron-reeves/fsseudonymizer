@@ -106,9 +106,7 @@ SOURCES += \
   sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
   sharedCode/ar_general_purpose/debugutils.cpp \
   cpseudonymizerrules.cpp \
-  customprocessing.cpp \
-  cprocessor.cpp \
-  sharedCode/qt_widgets/qclickablelabel.cpp
+  cprocessor.cpp
 
 HEADERS += \
   globals.h \
@@ -124,9 +122,18 @@ HEADERS += \
   sharedCode/ar_general_purpose/ctwodarray.h \
   sharedCode/ar_general_purpose/debugutils.h \
   cpseudonymizerrules.h \
-  customprocessing.h \
-  cprocessor.h \
-  sharedCode/qt_widgets/qclickablelabel.h
+  cprocessor.h
+
+#-------------------------------------------------------------
+# These files can be customized to do more complex processing
+#  than the main application is capable of supporting.
+#-------------------------------------------------------------
+SOURCES += \
+  customprocessing.cpp
+
+HEADERS += \
+  customprocessing.h
+#-------------------------------------------------------------
 
 
 console {
@@ -136,13 +143,15 @@ console {
     gui/cmainwindow.cpp \
     sharedCode/qt_widgets/cfileselect.cpp \
     sharedCode/qt_widgets/cmessagedialog.cpp \
-    sharedCode/qt_widgets/caboutform.cpp
+    sharedCode/qt_widgets/caboutform.cpp \
+    sharedCode/qt_widgets/qclickablelabel.cpp
 
   HEADERS += \
     gui/cmainwindow.h \
     sharedCode/qt_widgets/cfileselect.h \
     sharedCode/qt_widgets/cmessagedialog.h \
-    sharedCode/qt_widgets/caboutform.h
+    sharedCode/qt_widgets/caboutform.h \
+    sharedCode/qt_widgets/qclickablelabel.h
 
   FORMS += \
     gui/cmainwindow.ui \
