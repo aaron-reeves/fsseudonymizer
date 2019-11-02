@@ -1,6 +1,6 @@
 /*
-XLPseudonymizer - cmainwindow.h/cpp
-------------------------------------
+Fsseudonymizer - cmainwindow.h/cpp
+----------------------------------
 Begin: 2019/10/13
 Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
 ---------------------------------------------------

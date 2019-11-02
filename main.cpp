@@ -1,6 +1,6 @@
 /*
-XLPseudonymizer - main.cpp
---------------------------
+Fsseudonymizer - main.cpp
+-------------------------
 Begin: 2019/10/12
 Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
 ---------------------------------------------------
