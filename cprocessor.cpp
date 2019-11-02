@@ -188,7 +188,7 @@ int CProcessor::readData() {
 
   if( ReturnCode::SUCCESS == _result ) {
     foreach( const QString& fieldName, _rules->fieldNames() ) {
-      if( !_data.colNames().contains( fieldName, Qt::CaseInsensitive ) ) {
+      if( !_data.hasColumnName( fieldName ) ) {
         logMsg( QStringLiteral( "Data file does not contain field '%1'").arg( fieldName ) );
         _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
       }
@@ -213,7 +213,7 @@ int CProcessor::process() {
   //------------------------------------------
   foreach( const QString& key, _rules->keys() ) {
     if( _rules->value( key ).removeField() ) {
-      _data.removeColumn( key, Qt::CaseInsensitive );
+      _data.removeColumn( key );
     }
   }
 
