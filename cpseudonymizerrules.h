@@ -1,6 +1,6 @@
 /*
-XLPseudonymizer - cpseudonymizerrules.h/cpp
--------------------------------------------
+Fsseudonymizer - cpseudonymizerrules.h/cpp
+------------------------------------------
 Begin: 2019/10/12
 Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
 ---------------------------------------------------
