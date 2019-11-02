@@ -27,11 +27,13 @@ class CPseudonymizerRule {
     CPseudonymizerRule& operator=( const CPseudonymizerRule& other ) { assign( other ); return *this; }
     ~CPseudonymizerRule() { /* Nothing to do here */ }
 
-    QString fieldName( void ) const { return _fieldName; }
-    bool pseudonymize( void ) const { return _pseudonymize; }
-    bool isRequired( void ) const { return _isRequired; }
-    bool validate( void ) const { return _validate; }
-    QRegExp validationRegExp( void ) const { return _validationRegExp; }
+    QString fieldName() const { return _fieldName; }
+    bool pseudonymizeStandard() const { return _pseudonymizeStandard; }
+    bool pseudonymizeSimplified() const { return _pseudonymizeSimplified; }
+    bool removeField() const { return _remove; }
+    bool isRequired() const { return _isRequired; }
+    bool validate() const { return _validate; }
+    QRegExp validationRegExp() const { return _validationRegExp; }
 
     bool isValid() const { return _isValid; }
     QStringList errorMessages() const { return _errMsgs; }
@@ -46,10 +48,15 @@ class CPseudonymizerRule {
     void initialize();
     void assign( const CPseudonymizerRule& other );
 
+    // This function MUST NOT change: doing so would break backward compatibility!
+    QString removeAllSymbols( QString str ) const;
+
     int _rowNumber;
 
     QString _fieldName;
-    bool _pseudonymize;
+    bool _pseudonymizeStandard;
+    bool _pseudonymizeSimplified;
+    bool _remove;
     bool _isRequired;
     bool _validate;
     QRegExp _validationRegExp;
@@ -59,6 +66,7 @@ class CPseudonymizerRule {
 };
 
 
+// Key is lowercase version of the field name
 class CPseudonymizerRules : public QObject, public QHash<QString, CPseudonymizerRule> {
   Q_OBJECT
 

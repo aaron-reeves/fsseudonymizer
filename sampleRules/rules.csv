@@ -1,5 +1,6 @@
-FieldName,GeneratePseudonym,RequiredField,ValidateField,ValidationRegExp
-Name,Yes,Yes,No,
-Age,No,Yes,Yes,"[0-9]{1,3}"
-Height-inches,No,Yes,Yes,"[0-9]{1,3}"
-Weight-pounds,No,Yes,Yes,"[0-9]{1,3}"
+FieldName,SimplifiedPseudonym,StandardPseudonym,RemoveField,RequiredField,ValidateField,ValidationRegExp
+Name,Yes,No,No,Yes,No,
+Age,No,No,No,Yes,Yes,"[0-9]{1,3}"
+Height-inches,No,No,No,Yes,Yes,"[0-9]{1,3}"
+Weight-pounds,No,No,No,Yes,Yes,"[0-9]{1,3}"
+Spouse,No,No,Yes,No,No,

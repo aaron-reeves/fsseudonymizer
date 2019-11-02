@@ -36,12 +36,35 @@ CPseudonymizerRule::CPseudonymizerRule( QCsv* csv ) {
     _errMsgs.append( QStringLiteral("Rules file line %1: 'FieldName' is empty.").arg( _rowNumber ) );
   }
 
-  if( !csv->field( QStringLiteral("GeneratePseudonym") ).isEmpty() ) {
-    if( strIsBool( csv->field( QStringLiteral("GeneratePseudonym") ) ) )
-      _pseudonymize = strToBool( csv->field( QStringLiteral("GeneratePseudonym") ) );
+  if( !csv->field( QStringLiteral("StandardPseudonym") ).isEmpty() ) {
+    if( strIsBool( csv->field( QStringLiteral("StandardPseudonym") ) ) )
+      _pseudonymizeStandard = strToBool( csv->field( QStringLiteral("StandardPseudonym") ) );
     else {
       _isValid = false;
-      _errMsgs.append( QStringLiteral("Rules file line %1: 'GeneratePseudonym' contains an invalid value.").arg( _rowNumber ) );
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'StandardPseudonym' contains an invalid value.").arg( _rowNumber ) );
+    }
+  }
+
+  if( !csv->field( QStringLiteral("SimplifiedPseudonym") ).isEmpty() ) {
+    if( strIsBool( csv->field( QStringLiteral("SimplifiedPseudonym") ) ) )
+      _pseudonymizeSimplified = strToBool( csv->field( QStringLiteral("SimplifiedPseudonym") ) );
+    else {
+      _isValid = false;
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'SimplifiedPseudonym' contains an invalid value.").arg( _rowNumber ) );
+    }
+  }
+
+  if( _pseudonymizeStandard && _pseudonymizeSimplified ) {
+    _isValid = false;
+    _errMsgs.append( QStringLiteral("Rules file line %1: 'SimplifiedPseudonym' and 'StandardPseudonym' cannot both be true.").arg( _rowNumber ) );
+  }
+
+  if( !csv->field( QStringLiteral("RemoveField") ).isEmpty() ) {
+    if( strIsBool( csv->field( QStringLiteral("RemoveField") ) ) )
+      _remove = strToBool( csv->field( QStringLiteral("RemoveField") ) );
+    else {
+      _isValid = false;
+      _errMsgs.append( QStringLiteral("Rules file line %1: 'RemoveField' contains an invalid value.").arg( _rowNumber ) );
     }
   }
 
@@ -70,12 +93,19 @@ CPseudonymizerRule::CPseudonymizerRule( QCsv* csv ) {
       _errMsgs.append( QStringLiteral("Rules file line %1: 'ValidationRegExp' contains an invalid expression.").arg( _rowNumber ) );
     }
   }
+
+  if( _remove && ( _pseudonymizeStandard || _pseudonymizeSimplified || _isRequired || _validate ) ) {
+    _isValid = false;
+    _errMsgs.append( QStringLiteral("Rules file line %1: A field cannot be both removed and processed.").arg( _rowNumber ) );
+  }
 }
 
 
 void CPseudonymizerRule::initialize() {
   _rowNumber = -1;
-  _pseudonymize = false;
+  _pseudonymizeStandard = false;
+  _pseudonymizeSimplified = false;
+  _remove = false;
   _isRequired = false;
   _validate = false;
 
@@ -87,7 +117,9 @@ void CPseudonymizerRule::assign( const CPseudonymizerRule& other ) {
   _rowNumber = other._rowNumber;
 
   _fieldName = other._fieldName;
-  _pseudonymize = other._pseudonymize;
+  _pseudonymizeStandard = other._pseudonymizeStandard;
+  _pseudonymizeSimplified = other._pseudonymizeSimplified;
+  _remove = other._remove;
   _isRequired = other._isRequired;
   _validate = other._validate;
   _validationRegExp = other._validationRegExp;
@@ -99,6 +131,18 @@ void CPseudonymizerRule::assign( const CPseudonymizerRule& other ) {
 QString CPseudonymizerRule::sha( const QString& value, const QString& passphrase ) {
   QString tmp = QStringLiteral( "%1 %2" ).arg( passphrase, value );
   return QString( QCryptographicHash::hash( tmp.toLatin1(), QCryptographicHash::Sha224 ).toHex() );
+}
+
+
+// This function MUST NOT change: doing so would break backward compatibility!
+QString CPseudonymizerRule::removeAllSymbols( QString str ) const {
+  for( int i = str.length() - 1; -1 < i; --i ) {
+    if( !( str.at(i).isLetter() || str.at(i).isNumber() || str.at(i).isSpace() ) ) {
+      str.replace( i, 1, QString() );
+    }
+  }
+
+  return str;
 }
 
 
@@ -117,22 +161,28 @@ QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passph
     errMsgs.append( QStringLiteral("Value does not match the specified regular expression.") );
   }
 
-  if( !error && _pseudonymize ) {
-    result = sha( val.toString().simplified().trimmed().toLower(), passphrase );
+  if( !error ) {
+    if( _pseudonymizeSimplified ) {
+      // This function MUST NOT change: doing so would break backward compatibility!
+      result = sha( removeAllSymbols( val.toString() ).toLower().simplified().trimmed(), passphrase );
+    }
+    else if( _pseudonymizeStandard ) {
+      // This function MUST NOT change: doing so would break backward compatibility!
+      result = sha( val.toString().trimmed(), passphrase );
+    }
   }
 
-  if( error ) {
+  if( error )
     return QVariant();
-  }
-  else {
+  else
     return result;
-  }
 }
 
 
 void CPseudonymizerRule::debug() const {
   qDb() << "fieldName:" << _fieldName;
-  qDb() << "pseudonymize:" << _pseudonymize;
+  qDb() << "pseudonymizeStandard:" << _pseudonymizeStandard;
+  qDb() << "pseudonymizeSimplified:" << _pseudonymizeSimplified;
   qDb() << "isRequired:" << _isRequired;
   qDb() << "validate:" << _validate;
   qDb() << "validationRegExp:" << _validationRegExp;
@@ -313,7 +363,9 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName, const bool read
   }
 
   tmpFieldNames.removeOne( QStringLiteral("FieldName").toLower() );
-  tmpFieldNames.removeOne( QStringLiteral("GeneratePseudonym").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("StandardPseudonym").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("SimplifiedPseudonym").toLower() );
+  tmpFieldNames.removeOne( QStringLiteral("RemoveField").toLower() );
   tmpFieldNames.removeOne( QStringLiteral("RequiredField").toLower() );
   tmpFieldNames.removeOne( QStringLiteral("ValidateField").toLower() );
   tmpFieldNames.removeOne( QStringLiteral("ValidationRegExp").toLower() );

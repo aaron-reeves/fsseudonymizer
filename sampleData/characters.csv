@@ -1,5 +1,5 @@
-Name,Age,Height-inches,Weight-pounds
-Hank Hill,39,73,220
-Eric Carman,10,38,100
-Elmer Fudd,79,61,110
-Homer Simpson,43,68,235
+Name,Age,Height-inches,Weight-pounds,Spouse
+Hank Hill,39,73,220,Peggy Hill
+Eric Carman,10,38,100,
+Elmer £ Fudd,79,61,110,
+Homer J. Simpson,43,68,235,Marge Simpson
