@@ -1,4 +1,4 @@
-IDI_ICON1   ICON    DISCARDABLE     "sruc.ico"
+IDI_ICON1   ICON    DISCARDABLE     "images/sruc.ico"
 
 # if defined(UNDER_CE)
 #  include <winbase.h>
@@ -27,8 +27,8 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "1.0.0.20191012\0"
 				VALUE "LegalCopyright", "Copyright 2019 Scotland's Rural College (SRUC)\0"
-				VALUE "OriginalFilename", "xlpseudonymizer.exe\0"
-				VALUE "ProductName", "XLPseudonymizer\0"
+        VALUE "OriginalFilename", "fsseudonymizer.exe\0"
+        VALUE "ProductName", "Fsseudonymizer\0"
 				VALUE "ProductVersion", "1.0.0.20191012\0"
 			END
 		END
