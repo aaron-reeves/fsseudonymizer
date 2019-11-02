@@ -82,8 +82,7 @@ void CProcessor::getData( const QString& inputFileName ) {
   //--------------------------------------
   QString errMsg;
   bool error;
-  QString fileTypeInfo;
-  fileTypeInfo = magicFileTypeInfo( inputFileName, &error, &errMsg );
+  QString fileTypeInfo = magicFileTypeInfo( inputFileName, &error, &errMsg );
 
   if( error ) {
     logMsg( QStringLiteral("An application error occurred: file type could not be determined. Please check with the developers:") );
@@ -94,7 +93,7 @@ void CProcessor::getData( const QString& inputFileName ) {
 
   // If the input file is a CSV file, read it
   //-----------------------------------------
-  if( magicStringShowsAsciiTextFile( fileTypeInfo ) ) {
+  if( magicStringShowsAnyTextFile( fileTypeInfo ) ) {
     emit setStageSteps( int( QFileInfo( inputFileName ).size() ) );
     QCoreApplication::processEvents();
 
@@ -170,6 +169,8 @@ void CProcessor::getData( const QString& inputFileName ) {
   //----------------------------------------------
   else {
     logMsg( QStringLiteral("Input file type is unrecognized or unsupported.") );
+    logMsg( QStringLiteral("Please check your file format, or contact the developers.") );
+    logMsg( QStringLiteral("Technical information: %1").arg( fileTypeInfo ) );
     _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
   }
 }
@@ -208,6 +209,14 @@ int CProcessor::process() {
     return _result;
   }
 
+  // Remove any columns designated for removal
+  //------------------------------------------
+  foreach( const QString& key, _rules->keys() ) {
+    if( _rules->value( key ).removeField() ) {
+      _data.removeColumn( key, Qt::CaseInsensitive );
+    }
+  }
+
   //------------------------------------------------------
   // If needed, any further preprocessing of the data set
   // can be done in a customized version of this function
@@ -223,7 +232,6 @@ int CProcessor::process() {
   QCoreApplication::processEvents();
 
   for( int r = 0; r < _data.nRows(); ++r ) {
-
     //---------------------------------------------------------
     // If needed, any further preprocessing of a particular row
     // can be done in a customized version of this function

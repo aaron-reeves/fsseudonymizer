@@ -1,4 +1,4 @@
-## XLPseudonymizer.pro
+## Fsseudonymizer.pro
 ## -------------------
 ## Begin: 2019/10/12
 ## Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
@@ -35,7 +35,7 @@ VERSION = "1.0.0.20191101" ## !!! Remember when updating version numbers to also
 VERSION_SHORT = 1.0.0      ## !!! Remember when updating version numbers to also update the RC file !!!
 DATE = "01-Nov-2019"       ## !!! Remember when updating version numbers to also update the RC file !!!
 
-RC_FILE = XLPseudonymizer.rc ## Contains the application icon
+RC_FILE = Fsseudonymizer.rc ## Contains the application icon
 ## !!!-------------------------------------------------------------------------------------------------
 
 DEFINES += \
@@ -45,14 +45,14 @@ DEFINES += \
 
 gui_application {
   QT += gui
-  TARGET = xlpseudonymizer
-  DEFINES += APP_NAME=\\\"XLPseudonymizer\\\"
+  TARGET = fsseudonymizer
+  DEFINES += APP_NAME=\\\"Fsseudonymizer\\\"
 } else {
   QT -= gui
   CONFIG += console
   DEFINES += CONSOLE_APP
-  TARGET = xlpseudonymizerc
-  DEFINES += APP_NAME=\\\"XLPseudonymizerC\\\"
+  TARGET = fsseudonymizerc
+  DEFINES += APP_NAME=\\\"FsseudonymizerC\\\"
 }
 
 
