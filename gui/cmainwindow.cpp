@@ -38,6 +38,8 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
 
   this->setWindowTitle(qApp->applicationName() );
 
+  this->removeToolBar( ui->mainToolBar );
+
   if( !_useRulesFileFromResource ) {
     ui->fsRulesFile->setLabel( QStringLiteral("Rules file") );
     ui->fsRulesFile->setMode( CFileSelect::ModeExistingFile | CFileSelect::ModeOpenFile );
@@ -457,6 +459,8 @@ void CMainWindow::about() {
   CAboutForm frm( this );
 
   frm.setPixmap( QStringLiteral(":/images/sruc-small-xparentBackground.png") );
+  frm.showWebsite();
+  frm.setWebsite( CGlobals::Website() );
   frm.setEmailAddress( CGlobals::EmailAddress() );
   frm.setBriefDescr( CGlobals::AppDescr() );
   frm.setCopyright( CGlobals::CopyrightInfo() );
