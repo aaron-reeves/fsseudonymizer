@@ -9,6 +9,10 @@ class CGlobals {
     static QString OrgDomain() { return QStringLiteral( "epidemiology.sruc.ac.uk" ); }
     static QString AppName() { return QStringLiteral( "%1 (FSS Edition)" ).arg( QStringLiteral(APP_NAME) ); }
     static QString AppVersion() { return QStringLiteral( APP_VERSION ); }
+    static QString AppVersionShort() { return QStringLiteral( APP_VERSION_SHORT ); }
+
+    // Update this for different customized editions/branches
+    static QString Edition() { return QString(); }
 
     static QString CopyrightInfo() { return QStringLiteral( "Copyright (C) 2019 Scotland's Rural College (SRUC)" ); }
     static QString LicenseStatement() { return QStringLiteral( "This is free software, released under the terms of the GNU General Public License" ); }

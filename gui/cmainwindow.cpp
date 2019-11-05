@@ -36,7 +36,13 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
 
   ui->setupUi(this);
 
-  this->setWindowTitle(qApp->applicationName() );
+  QString windowTitle = QStringLiteral( "%1 %2" ).arg( CGlobals::AppName(), CGlobals::AppVersionShort() );
+
+  if( !CGlobals::Edition().isEmpty() ) {
+    windowTitle.append( QStringLiteral( " (%1 Edition)").arg( CGlobals::Edition() ) );
+  }
+
+  this->setWindowTitle( windowTitle );
 
   this->removeToolBar( ui->mainToolBar );
 
@@ -458,6 +464,7 @@ void CMainWindow::setControlsEnabled( QWidget* widget, const bool val ) {
 void CMainWindow::about() {
   CAboutForm frm( this );
 
+  frm.setWindowTitle( this->windowTitle() );
   frm.setPixmap( QStringLiteral(":/images/sruc-small-xparentBackground.png") );
   frm.showWebsite();
   frm.setWebsite( CGlobals::Website() );
