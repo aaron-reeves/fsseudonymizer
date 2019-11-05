@@ -72,9 +72,6 @@ class CPseudonymizerRules : public QObject, public QHash<QString, CPseudonymizer
 
   public:
     CPseudonymizerRules( QObject* parent = nullptr );
-//    CPseudonymizerRules( const QString& rulesFileName );
-//    CPseudonymizerRules( const CPseudonymizerRules& other );
-//    CPseudonymizerRules& operator=( const CPseudonymizerRules& other );
     ~CPseudonymizerRules() { /* Nothing to do here. */ }
 
     int readFile( const QString& rulesFileName, const bool readFromResource );

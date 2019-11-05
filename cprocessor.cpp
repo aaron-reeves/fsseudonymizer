@@ -186,10 +186,12 @@ int CProcessor::readData() {
 
   getData( _params.value( QStringLiteral("input") ) );
 
+  // Check that required fields are present
+  //---------------------------------------
   if( ReturnCode::SUCCESS == _result ) {
     foreach( const QString& fieldName, _rules->fieldNames() ) {
-      if( !_data.hasColumnName( fieldName ) ) {
-        logMsg( QStringLiteral( "Data file does not contain field '%1'").arg( fieldName ) );
+      if( !_data.hasColumnName( fieldName ) && _rules->value( fieldName.toLower() ).isRequired() ) {
+        logMsg( QStringLiteral( "Data file does not contain required field '%1'").arg( fieldName ) );
         _result = ( _result | ReturnCode::INPUT_FILE_PROBLEM );
       }
     }
@@ -211,9 +213,9 @@ int CProcessor::process() {
 
   // Remove any columns designated for removal
   //------------------------------------------
-  foreach( const QString& key, _rules->keys() ) {
-    if( _rules->value( key ).removeField() ) {
-      _data.removeColumn( key );
+  foreach( const QString& fieldName, _rules->fieldNames() ) {
+    if( _data.hasColumnName( fieldName ) && _rules->value( fieldName.toLower() ).removeField() ) {
+      _data.removeColumn( fieldName );
     }
   }
 
