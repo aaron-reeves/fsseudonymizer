@@ -31,9 +31,9 @@ CONFIG += gui_application
 ## !!!-------------------------------------------------------------------------------------------------
 # Definitions for the application name and version
 ## !!!-------------------------------------------------------------------------------------------------
-VERSION = "1.0.0.20191101" ## !!! Remember when updating version numbers to also update the RC file !!!
+VERSION = "1.0.0.20191105" ## !!! Remember when updating version numbers to also update the RC file !!!
 VERSION_SHORT = 1.0.0      ## !!! Remember when updating version numbers to also update the RC file !!!
-DATE = "01-Nov-2019"       ## !!! Remember when updating version numbers to also update the RC file !!!
+DATE = "05-Nov-2019"       ## !!! Remember when updating version numbers to also update the RC file !!!
 
 RC_FILE = Fsseudonymizer.rc ## Contains the application icon
 ## !!!-------------------------------------------------------------------------------------------------
