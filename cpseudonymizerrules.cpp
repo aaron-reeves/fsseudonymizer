@@ -409,24 +409,6 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName, const bool read
 }
 
 
-//CPseudonymizerRules::CPseudonymizerRules( const CPseudonymizerRules& other ) : QHash<QString, CPseudonymizerRule>( other ) {
-//  _result = other._result;
-//  _fieldNames = other._fieldNames;
-//  _errMsgs = other._errMsgs;
-//}
-
-
-//CPseudonymizerRules& CPseudonymizerRules::operator=( const CPseudonymizerRules& other ) {
-//  QHash<QString, CPseudonymizerRule>::operator=( other );
-
-//  _result = other._result;
-//  _fieldNames = other._fieldNames;
-//  _errMsgs = other._errMsgs;
-
-//  return *this;
-//}
-
-
 void CPseudonymizerRules::debug() const {
   QHash<QString, CPseudonymizerRule>::const_iterator it;
   for( it = this->begin(); it != this->end(); ++it ) {
