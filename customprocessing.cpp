@@ -44,6 +44,7 @@ int customPreProcessRow( CTwoDArray<QVariant>* data, const int rowIdx ) {
       logMsg( QStringLiteral( "Input file line %1, field '%2': %3" ).arg( rowIdx+2 ).arg( QStringLiteral("CPH"), errMsg ) );
     }
     else {
+      data->setValue( QStringLiteral("CPH"), rowIdx, cph.toString() );
       data->setValue( QStringLiteral("County"), rowIdx, cph.county() );
     }
   }
@@ -57,6 +58,7 @@ int customPreProcessRow( CTwoDArray<QVariant>* data, const int rowIdx ) {
       logMsg( QStringLiteral( "Input file line %1, field '%2': %3" ).arg( rowIdx+2 ).arg( QStringLiteral("Producer Postcode"), errMsg ) );
     }
     else {
+      data->setValue( QStringLiteral("Producer Postcode"), rowIdx, postcode.postcode() );
       data->setValue( QStringLiteral("Postcode district"), rowIdx, postcode.district() );
     }
   }
