@@ -438,6 +438,7 @@ void CMainWindow::process() {
 
   if( ReturnCode::SUCCESS == result ) {
     QMessageBox::information( this, QStringLiteral("Success"), QStringLiteral("Data file was successfully processed, and output has been generated.") );
+    ui->fsOutputFile->clearPath();
   }
   else {
     dlgErrors.exec();
