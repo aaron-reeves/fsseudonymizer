@@ -466,6 +466,7 @@ void CMainWindow::about() {
   CAboutForm frm( this );
 
   frm.setWindowTitle( this->windowTitle() );
+  frm.setAppName( this->windowTitle() );
   frm.setPixmap( QStringLiteral(":/images/sruc-small-xparentBackground.png") );
   frm.showWebsite();
   frm.setWebsite( CGlobals::Website() );
