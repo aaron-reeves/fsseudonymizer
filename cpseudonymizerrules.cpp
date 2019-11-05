@@ -142,7 +142,7 @@ QString CPseudonymizerRule::removeAllSymbols( QString str ) const {
     }
   }
 
-  return str;
+  return str.simplified();
 }
 
 
@@ -164,7 +164,7 @@ QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passph
   if( !error ) {
     if( _pseudonymizeSimplified ) {
       // This function MUST NOT change: doing so would break backward compatibility!
-      result = sha( removeAllSymbols( val.toString() ).toLower().simplified().trimmed(), passphrase );
+      result = sha( removeAllSymbols( val.toString() ).toLower().trimmed(), passphrase );
     }
     else if( _pseudonymizeStandard ) {
       // This function MUST NOT change: doing so would break backward compatibility!
