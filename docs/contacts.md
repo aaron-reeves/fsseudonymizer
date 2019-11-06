@@ -1,4 +1,4 @@
-[Table of contents](../tableOfContents.md) 
-Previous: [License](../license.md)
+[Table of contents](tableOfContents.md) 
+Previous: [License](license.md)
 
 # Fsseudonymizer: Contacts
