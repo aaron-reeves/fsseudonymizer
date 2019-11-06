@@ -3,8 +3,8 @@
 ---
 
 ## Contents:
-  - [Purpose of the application](../purpose.md)
-  - [System requirements](../systemRequirements.md)
+  - [Purpose of the application](purpose.md)
+  - [System requirements](systemRequirements.md)
   - [Installation](../installation.md)
   - [Using the program](../usage.md)
    - [The pass phrase](../usage.md#markdown-header-the-pass-phrase)
