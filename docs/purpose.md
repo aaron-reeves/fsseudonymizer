@@ -1,4 +1,4 @@
-[Table of contents](_tableOfContents.md) 
+[Table of contents](_tableOfContents.md)
 Next: [System requirements](systemRequirements.md)
 
 # Fsseudonymizer: Purpose of the application
