@@ -88,36 +88,36 @@ win32 {
 }
 
 
-INCLUDEPATH += ../sharedCode
+INCLUDEPATH += ../submodules
 
 
 SOURCES += \
   main.cpp\
-  ../sharedCode/ar_general_purpose/cfilelist.cpp \
-  ../sharedCode/ar_general_purpose/returncodes.cpp \
-  ../sharedCode/ar_general_purpose/csv.cpp \
-  ../sharedCode/ar_general_purpose/strutils.cpp \
-  ../sharedCode/ar_general_purpose/qcout.cpp \
-  ../sharedCode/ar_general_purpose/log.cpp \
-  ../sharedCode/ar_general_purpose/filemagic.cpp \
-  ../sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
-  ../sharedCode/ar_general_purpose/debugutils.cpp \
+  ../submodules/ar_general_purpose/cfilelist.cpp \
+  ../submodules/ar_general_purpose/returncodes.cpp \
+  ../submodules/ar_general_purpose/csv.cpp \
+  ../submodules/ar_general_purpose/strutils.cpp \
+  ../submodules/ar_general_purpose/qcout.cpp \
+  ../submodules/ar_general_purpose/log.cpp \
+  ../submodules/ar_general_purpose/filemagic.cpp \
+  ../submodules/ar_general_purpose/cspreadsheetarray.cpp \
+  ../submodules/ar_general_purpose/debugutils.cpp \
   cpseudonymizerrules.cpp \
   cprocessor.cpp
 
 HEADERS += \
   globals.h \
-  ../sharedCode/ar_general_purpose/cfilelist.h \
-  ../sharedCode/ar_general_purpose/returncodes.h \
-  ../sharedCode/ar_general_purpose/csv.h \
-  ../sharedCode/ar_general_purpose/strutils.h \
-  ../sharedCode/ar_general_purpose/qcout.h \
-  ../sharedCode/ar_general_purpose/log.h \
-  ../sharedCode/ar_general_purpose/filemagic.h \
-  ../sharedCode/ar_general_purpose/cspreadsheetarray.h \
-  ../sharedCode/ar_general_purpose/xlcsv.h \
-  ../sharedCode/ar_general_purpose/ctwodarray.h \
-  ../sharedCode/ar_general_purpose/debugutils.h \
+  ../submodules/ar_general_purpose/cfilelist.h \
+  ../submodules/ar_general_purpose/returncodes.h \
+  ../submodules/ar_general_purpose/csv.h \
+  ../submodules/ar_general_purpose/strutils.h \
+  ../submodules/ar_general_purpose/qcout.h \
+  ../submodules/ar_general_purpose/log.h \
+  ../submodules/ar_general_purpose/filemagic.h \
+  ../submodules/ar_general_purpose/cspreadsheetarray.h \
+  ../submodules/ar_general_purpose/xlcsv.h \
+  ../submodules/ar_general_purpose/ctwodarray.h \
+  ../submodules/ar_general_purpose/debugutils.h \
   cpseudonymizerrules.h \
   cprocessor.h
 
@@ -151,30 +151,30 @@ console {
 } else {
   SOURCES += \
     gui/cmainwindow.cpp \
-    ../sharedCode/qt_widgets/cfileselect.cpp \
-    ../sharedCode/qt_widgets/cmessagedialog.cpp \
-    ../sharedCode/qt_widgets/caboutform.cpp \
-    ../sharedCode/qt_widgets/qclickablelabel.cpp
+    ../submodules/qt_widgets/cfileselect.cpp \
+    ../submodules/qt_widgets/cmessagedialog.cpp \
+    ../submodules/qt_widgets/caboutform.cpp \
+    ../submodules/qt_widgets/qclickablelabel.cpp
 
   HEADERS += \
     gui/cmainwindow.h \
-    ../sharedCode/qt_widgets/cfileselect.h \
-    ../sharedCode/qt_widgets/cmessagedialog.h \
-    ../sharedCode/qt_widgets/caboutform.h \
-    ../sharedCode/qt_widgets/qclickablelabel.h
+    ../submodules/qt_widgets/cfileselect.h \
+    ../submodules/qt_widgets/cmessagedialog.h \
+    ../submodules/qt_widgets/caboutform.h \
+    ../submodules/qt_widgets/qclickablelabel.h
 
   FORMS += \
     gui/cmainwindow.ui \
-    ../sharedCode/qt_widgets/cfileselect.ui \
-    ../sharedCode/qt_widgets/cmessagedialog.ui \
-    ../sharedCode/qt_widgets/caboutform.ui
+    ../submodules/qt_widgets/cfileselect.ui \
+    ../submodules/qt_widgets/cmessagedialog.ui \
+    ../submodules/qt_widgets/caboutform.ui
 }
 
 
 RESOURCES += \
   images/images.qrc \
   ../sampleRules/rules.qrc \
-  ../sharedCode/qt_widgets/qt_widgets.qrc
+  ../submodules/qt_widgets/qt_widgets.qrc
 
 
 
