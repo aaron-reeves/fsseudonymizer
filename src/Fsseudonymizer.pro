@@ -9,8 +9,8 @@
 ## Public License as published by the Free Software Foundation; either version 2 of the License, or
 ## (at your option) any later version.
 
-#CONFIG += MINGW64
-CONFIG += MINGW32
+CONFIG += MINGW64
+#CONFIG += MINGW32
 
 QT += core xlsx
 
@@ -24,7 +24,7 @@ TEMPLATE = app
 ## !!!-----------------------
 ## !!! For a GUI application:
 ## !!!-----------------------
-CONFIG += gui_application
+#CONFIG += gui_application
 ## !!!-----------------------
 
 
@@ -138,12 +138,12 @@ HEADERS += \
 # data from Food Standards Scotland for use in Topic 3 (surveillance)
 #--------------------------------------------------------------------
 SOURCES += \
-  sharedCode/epic_general_purpose/cph.cpp \
-  sharedCode/epic_general_purpose/cpostcode.cpp
+  ../sharedCode/epic_general_purpose/cph.cpp \
+  ../sharedCode/epic_general_purpose/cpostcode.cpp
 
 HEADERS += \
-  sharedCode/epic_general_purpose/cph.h \
-  sharedCode/epic_general_purpose/cpostcode.h
+  ../sharedCode/epic_general_purpose/cph.h \
+  ../sharedCode/epic_general_purpose/cpostcode.h
 #--------------------------------------------------------------------
 
 console {
