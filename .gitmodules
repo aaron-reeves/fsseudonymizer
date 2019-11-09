@@ -1,0 +1,8 @@
+[submodule "submodules/qt_widgets"]
+	path = submodules/qt_widgets
+	url = git@github.com:aaron-reeves/qt_widgets.git
+	branch = master
+[submodule "submodules/ar_general_purpose"]
+	path = submodules/ar_general_purpose
+	url = git@github.com:aaron-reeves/ar_general_purpose.git
+	branch = master
