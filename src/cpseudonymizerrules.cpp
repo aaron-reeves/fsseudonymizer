@@ -269,7 +269,7 @@ int CPseudonymizerRules::readFile( const QString &rulesFileName, const bool read
     QString fileTypeInfo = magicFileTypeInfo( rulesFileName, &error, &errMsg );
 
     if( !error ) {
-      isCsvFile = magicStringShowsAsciiTextFile( fileTypeInfo );
+      isCsvFile = magicStringShowsAnyTextFile( fileTypeInfo );
       isXlsxFile = magicStringShowsXlsxFile( fileTypeInfo, rulesFileName );
       isXlsFile = magicStringShowsXlsFile( fileTypeInfo );
 
