@@ -42,6 +42,8 @@ class CProcessor : public QObject {
 
     int result() const { return _result; }
 
+    static bool checkResourceForRules( bool& resourceOK, QHash<QString, QString>& params );
+
   signals:
     void stageStarted( const QString& stageDescr );
     void setStageSteps( const int nSteps );
