@@ -8,3 +8,6 @@
 	branch = master
 
 
+[submodule "submodules/epic_general_purpose"]
+	path = submodules/epic_general_purpose
+	url = git@epidata.sruc.ac.uk:shared/epic_general_purpose.git
