@@ -61,22 +61,22 @@ win32 {
     DEFINES += MINGW64
 
     LIBS += \
-      C:/libs/C_libs-x64/libmagicwin64/lib/magic1.lib \
-      C:/libs/C_libs-x64/libxls-github-x64/lib/libxlsreader.a
+      ../submodules/libmagic/lib64/magic1.lib \
+      ../submodules/libxls/lib64/libxlsreader.a
 
     INCLUDEPATH += \
-      C:/libs/C_libs-x64/libmagicwin64/include \
-      C:/libs/C_libs-x64/libxls-github-x64/include
+      ../submodules/libmagic/include64 \
+      ../submodules/libxls/include
   } else {
     DEFINES += MINGW32
 
     LIBS += \
-      C:/libs/C_libs/filemagic-5.03/lib/magic.lib \
-      C:/libs/C_libs/libxls-github/lib/libxlsreader.a
+      ../submodules/libmagic/lib32/magic.lib \
+      ../submodules/libxls/lib32/libxlsreader.a
 
     INCLUDEPATH += \
-      C:/libs/C_libs/filemagic-5.03/include \
-      C:/libs/C_libs/libxls-github/include
+      ../submodules/libmagic/include32 \
+      ../submodules/libxls/include
   }
 } else {
   LIBS += \
