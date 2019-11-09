@@ -138,12 +138,12 @@ HEADERS += \
 # data from Food Standards Scotland for use in Topic 3 (surveillance)
 #--------------------------------------------------------------------
 SOURCES += \
-  ../sharedCode/epic_general_purpose/cph.cpp \
-  ../sharedCode/epic_general_purpose/cpostcode.cpp
+  ../submodules/epic_general_purpose/cph.cpp \
+  ../submodules/epic_general_purpose/cpostcode.cpp
 
 HEADERS += \
-  ../sharedCode/epic_general_purpose/cph.h \
-  ../sharedCode/epic_general_purpose/cpostcode.h
+  ../submodules/epic_general_purpose/cph.h \
+  ../submodules/epic_general_purpose/cpostcode.h
 #--------------------------------------------------------------------
 
 console {
