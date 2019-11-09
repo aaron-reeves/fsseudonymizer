@@ -6,10 +6,6 @@
 	path = submodules/ar_general_purpose
 	url = git@github.com:aaron-reeves/ar_general_purpose.git
 	branch = master
-[submodule "submodules/epic_general_purpose"]
-	path = submodules/epic_general_purpose
-	url = git@epidata.sruc.ac.uk:shared/epic_general_purpose.git
-  branch = master
 [submodule "submodules/libmagic"]
 	path = submodules/libmagic
 	url = git@github.com:aaron-reeves/libmagicwin64.git
@@ -17,4 +13,8 @@
 [submodule "submodules/libxls"]
 	path = submodules/libxls
 	url = git@github.com:aaron-reeves/libxls.git
+	branch = master
+[submodule "submodules/epic_general_purpose"]
+	path = submodules/epic_general_purpose
+	url = git@epidata.sruc.ac.uk:shared/epic_general_purpose.git
 	branch = master
