@@ -431,3 +431,45 @@ void CProcessor::writeOutputCsv( const QString& outputFileName ) {
 }
 
 
+bool CProcessor::checkResourceForRules( bool& resourceOK, QHash<QString, QString>& params ) {
+  resourceOK = true;
+  bool useRulesFileFromResource = false;
+
+  CFileList fl( QStringLiteral(":/rules"), QStringLiteral("*.xlsx;*.csv;*.xls"), false );
+
+  int matchedFiles = 0;
+
+  #ifdef Q_OS_WIN
+    Qt::CaseSensitivity sens = Qt::CaseInsensitive;
+  #else
+    Qt::CaseSensitivity sens = Qt::CaseSensitive;
+  #endif
+
+  foreach( const CPathString& str, fl ) {
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.xlsx"), sens ) ) {
+      ++matchedFiles;
+      useRulesFileFromResource = true;
+      params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xlsx") );
+    }
+
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.csv"), sens ) ) {
+      ++matchedFiles;
+      useRulesFileFromResource = true;
+      params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.csv") );
+    }
+
+    if( 0 == str.compare( QStringLiteral(":/rules/rules.xls"), sens ) ) {
+      ++matchedFiles;
+      useRulesFileFromResource = true;
+      params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xls") );
+    }
+  }
+
+  if( 1 < matchedFiles ) {
+    params.remove( QStringLiteral("rules") );
+    resourceOK = false;
+  }
+
+  return useRulesFileFromResource;
+}
+

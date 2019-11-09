@@ -103,9 +103,7 @@ void setupCmdArgs( QCommandLineParser* cmd, QCoreApplication* app ) {
 /*
  * Parses command-line arguments, and performs some basic validation
  */
-QHash<QString, QString> processCmdArgs( QCommandLineParser* cmd, bool& error, QString& errMsg ) {
-  QHash<QString, QString> params;
-
+void processCmdArgs( QCommandLineParser* cmd, QHash<QString, QString>& params, bool& error, QString& errMsg ) {
   error = false;
   errMsg = QString();
 
@@ -116,11 +114,21 @@ QHash<QString, QString> processCmdArgs( QCommandLineParser* cmd, bool& error, QS
     errMsg.append( "Input file path is missing.\n" );
   }
 
-  if( cmd->isSet( QStringLiteral("rules") ) )
-    params.insert( QStringLiteral("rules"), cmd->value( QStringLiteral("rules") ) );
+  if( cmd->isSet( QStringLiteral("rules") ) ) {
+    // If rules file was already set from built-in resources, that's a problem
+    if( params.contains( QStringLiteral("rules") ) ) {
+      error = true;
+      errMsg.append( "Rules file overrides built-in rules." );
+    }
+    else {
+      params.insert( QStringLiteral("rules"), cmd->value( QStringLiteral("rules") ) );
+    }
+  }
   else {
-    error = true;
-    errMsg.append( "Configuration file path is missing.\n" );
+    if( !params.contains( QStringLiteral("rules") ) ) {
+      error = true;
+      errMsg.append( "Rules file path is missing.\n" );
+    }
   }
 
   if( cmd->isSet( QStringLiteral("passphrase") ) ) {
@@ -141,13 +149,11 @@ QHash<QString, QString> processCmdArgs( QCommandLineParser* cmd, bool& error, QS
     params.insert( QStringLiteral("output"), cmd->value( QStringLiteral("output") ) );
   }
 
-//  if( cmd->isSet( "errorfile" ) )
-//    params.insert( "errPath", cmd->value( "errorfile" ) );
+  //if( cmd->isSet( "errorfile" ) )
+  //  params.insert( "errPath", cmd->value( "errorfile" ) );
 
-//  params.insert( "logerrors", cmd->isSet( "logerrors" ) );
-//  params.insert( "silent", cmd->isSet( "silent" ) );
-
-  return params;
+  //params.insert( "logerrors", cmd->isSet( "logerrors" ) );
+  //params.insert( "silent", cmd->isSet( "silent" ) );
 }
 #endif
 
@@ -175,7 +181,7 @@ int main(int argc, char *argv[]) {
     appLog.setConsoleEcho( true );
     appLog.setUseSpacerLine( false );
     appLog.setWindowsFriendly( true );
-    appLog.openLog( QStringLiteral("pseudonymizer.log"), LoggingTypical );
+    //appLog.openLog( QStringLiteral("pseudonymizer.log"), LoggingTypical );
 
     // Define commandline arguments
     //-----------------------------
@@ -186,8 +192,18 @@ int main(int argc, char *argv[]) {
     //-----------------------------
     bool error;
     QString errorMsg;
+    bool resourceOK;
 
-    QHash<QString, QString> params = processCmdArgs( &cmd, error, errorMsg );
+    QHash<QString, QString> params;
+
+    bool useRulesFileFromResource = CProcessor::checkResourceForRules( resourceOK, params );
+
+    if( !resourceOK ) {
+      cout << QStringLiteral("There is a problem with the built-in rules file. Please contact the developers.") << endl;
+      return ReturnCode::FATAL_ERROR;
+    }
+
+    processCmdArgs( &cmd, params, error, errorMsg );
 
     if( error ) {
       cout << errorMsg << endl;
@@ -196,7 +212,7 @@ int main(int argc, char *argv[]) {
 
     // Run the process
     //----------------
-    CProcessor processor( params );
+    CProcessor processor( params, useRulesFileFromResource );
     result = ( result | processor.result() );
 
     if( ReturnCode::SUCCESS == result ) {
@@ -215,16 +231,6 @@ int main(int argc, char *argv[]) {
     //------------------
     if( ReturnCode::SUCCESS == result ) {
       result = ( result | processor.writeOutput() );
-    }
-
-    // Display errors to console, if requested
-    //----------------------------------------
-    if( ReturnCode::SUCCESS != result ) {
-      cout << "The following errors were encountered:" << endl;
-      foreach( const QString& msg, processor.errorMessages() ) {
-        cout << msg << endl;
-      }
-      cout << flush;
     }
 
     // Clean up and go home

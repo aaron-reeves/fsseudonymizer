@@ -32,7 +32,7 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
 
   initializeParams();
 
-  checkResourceForRules();
+  _useRulesFileFromResource = CProcessor::checkResourceForRules( _resourceOK, _params );
 
   ui->setupUi(this);
 
@@ -93,47 +93,6 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CMai
   connect( ui->acnAbout, SIGNAL( triggered() ), this, SLOT( about() ) );
 
   readSettings();
-}
-
-
-void CMainWindow::checkResourceForRules() {
-  _resourceOK = true;
-  _useRulesFileFromResource = false;
-
-  CFileList fl( QStringLiteral(":/rules"), QStringLiteral("*.xlsx;*.csv;*.xls"), false );
-
-  int matchedFiles = 0;
-
-  #ifdef Q_OS_WIN
-    Qt::CaseSensitivity sens = Qt::CaseInsensitive;
-  #else
-    Qt::CaseSensitivity sens = Qt::CaseSensitive;
-  #endif
-
-  foreach( const CPathString& str, fl ) {
-    if( 0 == str.compare( QStringLiteral(":/rules/rules.xlsx"), sens ) ) {
-      ++matchedFiles;
-      _useRulesFileFromResource = true;
-      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xlsx") );
-    }
-
-    if( 0 == str.compare( QStringLiteral(":/rules/rules.csv"), sens ) ) {
-      ++matchedFiles;
-      _useRulesFileFromResource = true;
-      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.csv") );
-    }
-
-    if( 0 == str.compare( QStringLiteral(":/rules/rules.xls"), sens ) ) {
-      ++matchedFiles;
-      _useRulesFileFromResource = true;
-      _params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xls") );
-    }
-  }
-
-  if( 1 < matchedFiles ) {
-    _params.remove( QStringLiteral("rules") );
-    _resourceOK = false;
-  }
 }
 
 

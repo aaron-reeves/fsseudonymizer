@@ -9,8 +9,8 @@
 ## Public License as published by the Free Software Foundation; either version 2 of the License, or
 ## (at your option) any later version.
 
-#CONFIG += MINGW64
-CONFIG += MINGW32
+CONFIG += MINGW64
+#CONFIG += MINGW32
 
 QT += core xlsx
 
@@ -24,7 +24,7 @@ TEMPLATE = app
 ## !!!-----------------------
 ## !!! For a GUI application:
 ## !!!-----------------------
-CONFIG += gui_application
+#CONFIG += gui_application
 ## !!!-----------------------
 
 
