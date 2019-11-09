@@ -75,6 +75,7 @@ section "-MainSection"
 
   # Copy each file in the installation directory
   file "..\..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_64bit\release\fsseudonymizer.exe"
+  file "..\..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_64bit\release\fsseudonymizerc.exe"
 
   file "C:\libs\C_libs-x64\libmagicwin64\bin\magic1.dll"
   file "C:\libs\C_libs-x64\libmagicwin64\bin\libgnurx-0.dll"
@@ -132,6 +133,7 @@ section "Uninstall"
   Delete "$INSTDIR\FsseudonymizerUninstall.exe"
   
   Delete "$INSTDIR\fsseudonymizer.exe"
+  Delete "$INSTDIR\fsseudonymizerc.exe"
 
   Delete "$INSTDIR\magic1.dll"
   Delete "$INSTDIR\libgnurx-0.dll"
