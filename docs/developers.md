@@ -21,7 +21,9 @@ The following toolkits and libraries are required to build _Fsseudonymizer_:
   - A suitable C++ compiler (we currently use the [MinGW](http://www.mingw.org) toolchain provided with Qt)
   - [libmagic](http://www.darwinsys.com/file/), a library for determining file types based on contents, as described [here](https://filemagic.readthedocs.io/en/latest/guide.html)
     - libmagic is included in virtually all Linux distributions
-    - A version of libmagic for _Windows_ is available.  _Fsseudonymizer_ uses the version at <https://github.com/aaron-reeves/libmagicwin64>, which is based on <https://github.com/pidydx/libmagicwin64>.
+    - Several versions of libmagic for _Windows_ are available:
+      - The 64-bit version of _Fsseudonymizer_ uses [libmagicwin64](https://github.com/aaron-reeves/libmagicwin64), which is based on <https://github.com/pidydx/libmagicwin64>.
+      - The 32-bit version of _Fsseudonymizer_ uses [File for Windows version 5.03](http://gnuwin32.sourceforge.net/packages/file.htm).
   - libxls, an open-source library for reading _Microsoft Excel 97-2003_-formatted files. _Fsseudonymizer_ uses the version at <https://github.com/aaron-reeves/libxls>, which is based on <https://github.com/libxls/libxls>.
   - QtXlsxWriter, an open-source library for reading and writing _Microsoft Excel 2007_-formatted files.  _Fsseudonymizer_ uses the version at <https://github.com/aaron-reeves/QtXlsxWriter>, which is derived from an original version at <https://github.com/dbzhang800/QtXlsxWriter>.
 
