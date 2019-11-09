@@ -9,8 +9,8 @@
 ## Public License as published by the Free Software Foundation; either version 2 of the License, or
 ## (at your option) any later version.
 
-CONFIG += MINGW64
-#CONFIG += MINGW32
+#CONFIG += MINGW64
+CONFIG += MINGW32
 
 QT += core xlsx
 
@@ -28,15 +28,15 @@ CONFIG += gui_application
 ## !!!-----------------------
 
 
-## !!!-------------------------------------------------------------------------------------------------
+## !!!--------------------------------------------------------------------------------------------------
 # Definitions for the application name and version
-## !!!-------------------------------------------------------------------------------------------------
-VERSION = "1.0.0.20191105" ## !!! Remember when updating version numbers to also update the RC file !!!
-VERSION_SHORT = 1.0.0      ## !!! Remember when updating version numbers to also update the RC file !!!
-DATE = "05-Nov-2019"       ## !!! Remember when updating version numbers to also update the RC file !!!
+## !!!--------------------------------------------------------------------------------------------------
+VERSION = "1.0.0.20191105"  ## !!! Remember when updating version numbers to also update the RC file !!!
+VERSION_SHORT = 1.0.0       ## !!! Remember when updating version numbers to also update the RC file !!!
+DATE = "05-Nov-2019"        ## !!! Remember when updating version numbers to also update the RC file !!!
 
 RC_FILE = Fsseudonymizer.rc ## Contains the application icon
-## !!!-------------------------------------------------------------------------------------------------
+## !!!--------------------------------------------------------------------------------------------------
 
 DEFINES += \
   APP_VERSION=\\\"$$VERSION\\\" \
@@ -88,36 +88,36 @@ win32 {
 }
 
 
-INCLUDEPATH += sharedCode
+INCLUDEPATH += ../sharedCode
 
 
 SOURCES += \
   main.cpp\
-  sharedCode/ar_general_purpose/cfilelist.cpp \
-  sharedCode/ar_general_purpose/returncodes.cpp \
-  sharedCode/ar_general_purpose/csv.cpp \
-  sharedCode/ar_general_purpose/strutils.cpp \
-  sharedCode/ar_general_purpose/qcout.cpp \
-  sharedCode/ar_general_purpose/log.cpp \
-  sharedCode/ar_general_purpose/filemagic.cpp \
-  sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
-  sharedCode/ar_general_purpose/debugutils.cpp \
+  ../sharedCode/ar_general_purpose/cfilelist.cpp \
+  ../sharedCode/ar_general_purpose/returncodes.cpp \
+  ../sharedCode/ar_general_purpose/csv.cpp \
+  ../sharedCode/ar_general_purpose/strutils.cpp \
+  ../sharedCode/ar_general_purpose/qcout.cpp \
+  ../sharedCode/ar_general_purpose/log.cpp \
+  ../sharedCode/ar_general_purpose/filemagic.cpp \
+  ../sharedCode/ar_general_purpose/cspreadsheetarray.cpp \
+  ../sharedCode/ar_general_purpose/debugutils.cpp \
   cpseudonymizerrules.cpp \
   cprocessor.cpp
 
 HEADERS += \
   globals.h \
-  sharedCode/ar_general_purpose/cfilelist.h \
-  sharedCode/ar_general_purpose/returncodes.h \
-  sharedCode/ar_general_purpose/csv.h \
-  sharedCode/ar_general_purpose/strutils.h \
-  sharedCode/ar_general_purpose/qcout.h \
-  sharedCode/ar_general_purpose/log.h \
-  sharedCode/ar_general_purpose/filemagic.h \
-  sharedCode/ar_general_purpose/cspreadsheetarray.h \
-  sharedCode/ar_general_purpose/xlcsv.h \
-  sharedCode/ar_general_purpose/ctwodarray.h \
-  sharedCode/ar_general_purpose/debugutils.h \
+  ../sharedCode/ar_general_purpose/cfilelist.h \
+  ../sharedCode/ar_general_purpose/returncodes.h \
+  ../sharedCode/ar_general_purpose/csv.h \
+  ../sharedCode/ar_general_purpose/strutils.h \
+  ../sharedCode/ar_general_purpose/qcout.h \
+  ../sharedCode/ar_general_purpose/log.h \
+  ../sharedCode/ar_general_purpose/filemagic.h \
+  ../sharedCode/ar_general_purpose/cspreadsheetarray.h \
+  ../sharedCode/ar_general_purpose/xlcsv.h \
+  ../sharedCode/ar_general_purpose/ctwodarray.h \
+  ../sharedCode/ar_general_purpose/debugutils.h \
   cpseudonymizerrules.h \
   cprocessor.h
 
@@ -151,30 +151,30 @@ console {
 } else {
   SOURCES += \
     gui/cmainwindow.cpp \
-    sharedCode/qt_widgets/cfileselect.cpp \
-    sharedCode/qt_widgets/cmessagedialog.cpp \
-    sharedCode/qt_widgets/caboutform.cpp \
-    sharedCode/qt_widgets/qclickablelabel.cpp
+    ../sharedCode/qt_widgets/cfileselect.cpp \
+    ../sharedCode/qt_widgets/cmessagedialog.cpp \
+    ../sharedCode/qt_widgets/caboutform.cpp \
+    ../sharedCode/qt_widgets/qclickablelabel.cpp
 
   HEADERS += \
     gui/cmainwindow.h \
-    sharedCode/qt_widgets/cfileselect.h \
-    sharedCode/qt_widgets/cmessagedialog.h \
-    sharedCode/qt_widgets/caboutform.h \
-    sharedCode/qt_widgets/qclickablelabel.h
+    ../sharedCode/qt_widgets/cfileselect.h \
+    ../sharedCode/qt_widgets/cmessagedialog.h \
+    ../sharedCode/qt_widgets/caboutform.h \
+    ../sharedCode/qt_widgets/qclickablelabel.h
 
   FORMS += \
     gui/cmainwindow.ui \
-    sharedCode/qt_widgets/cfileselect.ui \
-    sharedCode/qt_widgets/cmessagedialog.ui \
-    sharedCode/qt_widgets/caboutform.ui
+    ../sharedCode/qt_widgets/cfileselect.ui \
+    ../sharedCode/qt_widgets/cmessagedialog.ui \
+    ../sharedCode/qt_widgets/caboutform.ui
 }
 
 
 RESOURCES += \
   images/images.qrc \
-  sampleRules/rules.qrc \
-  sharedCode/qt_widgets/qt_widgets.qrc
+  ../sampleRules/rules.qrc \
+  ../sharedCode/qt_widgets/qt_widgets.qrc
 
 
 
