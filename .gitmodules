@@ -1,6 +1,0 @@
-[submodule "sharedCode/ar_general_purpose"]
-	path = submodules/ar_general_purpose
-	url = git@epidata.sruc.ac.uk:shared/ar_general_purpose.git
-[submodule "sharedCode/qt_widgets"]
-	path = submodules/qt_widgets
-	url = git@epidata.sruc.ac.uk:shared/qt_widgets.git
