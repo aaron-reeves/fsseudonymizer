@@ -7,3 +7,5 @@
 *.exe
 /src/*.user
 /sampleData/FSS
+/docs/PsseudonymizerGuideForFSS.md
+/docs/PsseudonymizerGuideForFSS.pdf
