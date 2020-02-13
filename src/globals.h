@@ -14,7 +14,7 @@ class CGlobals {
     // Update this for different customized editions/branches
     static QString Edition() { return QString(); }
 
-    static QString CopyrightInfo() { return QStringLiteral( "Copyright (C) 2019 Scotland's Rural College (SRUC)" ); }
+    static QString CopyrightInfo() { return QStringLiteral( "Copyright (C) 2019 - 2020 Scotland's Rural College (SRUC)" ); }
     static QString LicenseStatement() { return QStringLiteral( "This is free software, released under the terms of the GNU General Public License" ); }
     static QString AppDescr() { return QStringLiteral( "Pseudonym generation from CSV and Microsoft Excel-formatted data sets" ); }
 
