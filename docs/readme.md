@@ -1,0 +1,1 @@
+See <https://github.com/aaron-reeves/fsseudonymizer/wiki>

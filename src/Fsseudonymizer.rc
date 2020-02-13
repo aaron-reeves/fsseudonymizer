@@ -7,8 +7,8 @@ IDI_ICON1   ICON    DISCARDABLE     "images/sruc.ico"
 # endif
 
 VS_VERSION_INFO VERSIONINFO
-  FILEVERSION 1,0,0,20191105
-  PRODUCTVERSION 1,0,0,20191105
+  FILEVERSION 1,1,1,20200213
+  PRODUCTVERSION 1,1,1,20200213
 	FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 	FILEFLAGS VS_FF_DEBUG
@@ -25,11 +25,11 @@ VS_VERSION_INFO VERSIONINFO
 			BEGIN
 				VALUE "CompanyName", "SRUC Epidemiology Research Unit\0"
 				VALUE "FileDescription", "\0"
-        VALUE "FileVersion", "1.0.0.20191105\0"
-				VALUE "LegalCopyright", "Copyright 2019 Scotland's Rural College (SRUC)\0"
+        VALUE "FileVersion", "1.1.1.20200213\0"
+				VALUE "LegalCopyright", "Copyright 2019 -2020 Scotland's Rural College (SRUC)\0"
         VALUE "OriginalFilename", "fsseudonymizer.exe\0"
         VALUE "ProductName", "Fsseudonymizer\0"
-        VALUE "ProductVersion", "1.0.0.20191105\0"
+        VALUE "ProductVersion", "1.1.1.20200213\0"
 			END
 		END
 		BLOCK "VarFileInfo"

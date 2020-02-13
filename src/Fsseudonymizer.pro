@@ -3,7 +3,7 @@
 ## Begin: 2019/10/12
 ## Author: Aaron Reeves <aaron.reeves@sruc.ac.uk>
 ## ---------------------------------------------------
-## Copyright (C) 2019 Scotland's Rural College (SRUC)
+## Copyright (C) 2019 - 2020 Scotland's Rural College (SRUC)
 ##
 ## This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by the Free Software Foundation; either version 2 of the License, or
@@ -31,9 +31,9 @@ TEMPLATE = app
 ## !!!--------------------------------------------------------------------------------------------------
 # Definitions for the application name and version
 ## !!!--------------------------------------------------------------------------------------------------
-VERSION = "1.0.0.20191105"  ## !!! Remember when updating version numbers to also update the RC file !!!
-VERSION_SHORT = 1.0.0       ## !!! Remember when updating version numbers to also update the RC file !!!
-DATE = "05-Nov-2019"        ## !!! Remember when updating version numbers to also update the RC file !!!
+VERSION = "1.1.1.20200213"  ## !!! Remember when updating version numbers to also update the RC file !!!
+VERSION_SHORT = 1.1.1       ## !!! Remember when updating version numbers to also update the RC file !!!
+DATE = "13-Feb-2020"        ## !!! Remember when updating version numbers to also update the RC file !!!
 
 RC_FILE = Fsseudonymizer.rc ## Contains the application icon
 ## !!!--------------------------------------------------------------------------------------------------
