@@ -23,7 +23,7 @@ int customPreProcessData( CTwoDArray<QVariant>* data ) {
     data->appendColumn( QStringLiteral( "County" ) );
   }
   
-  if( data->hasColumnName( QStringLiteral( "Producer Postcode" ) ) ) {
+  if( data->hasColumnName( QStringLiteral( "Producer Postcode" ) ) || data->hasColumnName( QStringLiteral( "ProducerPostcode" ) ) ) {
     data->appendColumn( QStringLiteral( "Postcode district" ) );
   }
 
@@ -49,8 +49,21 @@ int customPreProcessRow( CTwoDArray<QVariant>* data, const int rowIdx ) {
     }
   }
 
+  bool processPostCode = false;
+  QString postcodeFieldName;
+
   if( data->hasColumnName( QStringLiteral("Producer Postcode") ) ) {
-    CPostcode postcode( data->at( QStringLiteral("Producer Postcode"), rowIdx ).toString() );
+    postcodeFieldName = QStringLiteral("Producer Postcode");
+    processPostCode = true;
+  }
+
+  if( data->hasColumnName( QStringLiteral("ProducerPostcode") ) ) {
+    postcodeFieldName = QStringLiteral("ProducerPostcode");
+    processPostCode = true;
+  }
+
+  if( processPostCode ) {
+    CPostcode postcode( data->at( postcodeFieldName, rowIdx ).toString() );
     if( !postcode.isValidFormat() ) {
       result = ( result | ReturnCode::DATA_VALIDATION_PROBLEM );
       errMsg = QStringLiteral( "Data does not appear to be a valid postcode" );

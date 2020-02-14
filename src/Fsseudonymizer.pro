@@ -24,7 +24,7 @@ TEMPLATE = app
 ## !!!-----------------------
 ## !!! For a GUI application:
 ## !!!-----------------------
-#CONFIG += gui_application
+##CONFIG += gui_application
 ## !!!-----------------------
 
 

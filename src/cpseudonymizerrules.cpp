@@ -162,13 +162,24 @@ QVariant CPseudonymizerRule::process( const QVariant& val, const QString& passph
   }
 
   if( !error ) {
+    QString valToProcess;
     if( _pseudonymizeSimplified ) {
       // This function MUST NOT change: doing so would break backward compatibility!
-      result = sha( removeAllSymbols( val.toString() ).toLower().trimmed(), passphrase );
+      valToProcess = removeAllSymbols( val.toString() ).toLower().trimmed();
     }
     else if( _pseudonymizeStandard ) {
       // This function MUST NOT change: doing so would break backward compatibility!
-      result = sha( val.toString().trimmed(), passphrase );
+      valToProcess = val.toString().trimmed();
+    }
+
+    // If the original value was empty, return an empty value.
+    // Otherwise, return an encrypted value.
+    if( valToProcess.isEmpty() ) {
+      result = QVariant();
+    }
+    else {
+      // This function MUST NOT change: doing so would break backward compatibility!
+      result = sha( valToProcess, passphrase );
     }
   }
 

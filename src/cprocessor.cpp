@@ -463,6 +463,22 @@ bool CProcessor::checkResourceForRules( bool& resourceOK, QHash<QString, QString
       useRulesFileFromResource = true;
       params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/rules.xls") );
     }
+
+    //----------------------------------------------------------------------------------------
+    // Rules files specifically for FSS edition
+    //----------------------------------------------------------------------------------------
+    if( 0 == str.compare( QStringLiteral(":/rules/FSS-rules-v1.csv"), sens ) ) {
+      ++matchedFiles;
+      useRulesFileFromResource = true;
+      params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/FSS-rules-v1.csv") );
+    }
+
+    if( 0 == str.compare( QStringLiteral(":/rules/FSS-rules-v2.csv"), sens ) ) {
+      ++matchedFiles;
+      useRulesFileFromResource = true;
+      params.insert( QStringLiteral("rules"), QStringLiteral(":/rules/FSS-rules-v2.csv") );
+    }
+    //----------------------------------------------------------------------------------------
   }
 
   if( 1 < matchedFiles ) {
