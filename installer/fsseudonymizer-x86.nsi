@@ -3,13 +3,13 @@
 # Begin: 2019/11/05
 
 #Name of the program being installed
-Name "Fsseudonymizer 1.0.0.20191105"
+Name "Fsseudonymizer 1.1.1.20200213 (FSS edition)"
 
 # NOTE: Can use the 'Icon' command to specify an icon file(.ico) for the .exe file.
 Icon installerIcon.ico
 
 # Installer name
-outFile "Fsseudonymizer-1_0_0-x86.exe"
+outFile "FsseudonymizerFSS-1_1_1-x86.exe"
 
 # Default installation directory
 installDir "$PROGRAMFILES\Fsseudonymizer"
@@ -21,7 +21,7 @@ installDir "$PROGRAMFILES\Fsseudonymizer"
 page custom startDialog "" ": Start Dialog"
 Function startDialog
   MessageBox MB_OKCANCEL "This application will install \
-  Fsseudonymizer version 1.0.0 \ 
+  Fsseudonymizer version 1.1.1 (FSS edition) \ 
   on your computer. Click OK to continue." \
   IDCANCEL NoCancelAbort 
   Abort
@@ -82,23 +82,23 @@ section "-MainSection"
   file "..\submodules\libmagic\bin32\zlib1.dll"
   file "..\submodules\libmagic\bin32\magic"
 
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\Qt5Core.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\Qt5Gui.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\Qt5Svg.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\Qt5Widgets.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\Qt5Xlsx.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\Qt5Core.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\Qt5Gui.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\Qt5Svg.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\Qt5Widgets.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\Qt5Xlsx.dll"
   
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\libEGL.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\libgcc_s_dw2-1.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\libGLESV2.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\libstdc++-6.dll"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\libwinpthread-1.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\libEGL.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\libgcc_s_dw2-1.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\libGLESV2.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\libstdc++-6.dll"
+  file "C:\Qt\5.12.4\mingw73_32\bin\libwinpthread-1.dll"
 
   setOutPath "$INSTDIR\platforms"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\platforms\qwindows.dll"
+  file "C:\Qt\5.12.4\mingw73_32\plugins\platforms\qwindows.dll"
 
   setOutPath "$INSTDIR\styles"
-  file "..\Fsseudonymizer-build-Release-Desktop_Qt_5_12_4_MinGW_32bit\release\styles\qwindowsvistastyle.dll"
+  file "C:\Qt\5.12.4\mingw73_32\plugins\styles\qwindowsvistastyle.dll"
 
   # Create an uninstaller
   writeUninstaller $INSTDIR\pseudoFishUninstall.exe
