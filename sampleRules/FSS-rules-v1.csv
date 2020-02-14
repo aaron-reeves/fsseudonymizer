@@ -1,0 +1,11 @@
+FieldName,SimplifiedPseudonym,StandardPseudonym,RemoveField,RequiredField,ValidateField,ValidationRegExp
+EstablishmentName,Yes,No,No,No,No,
+CPH,No,Yes,No,No,No,
+Name2,Yes,No,No,No,No,
+Producer Name,Yes,No,No,No,No,
+Producer Address1,No,No,Yes,No,No,
+Producer Address2,No,No,Yes,No,No,
+Producer Postcode,No,Yes,No,No,No,
+Producer Email,No,No,Yes,No,No,
+ProducerName,Yes,No,No,No,No,
+VetName,Yes,No,No,No,No,
