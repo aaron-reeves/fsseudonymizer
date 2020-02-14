@@ -3,7 +3,7 @@
 # Begin: 2019/11/05
 
 #Name of the program being installed
-Name "Fsseudonymizer 1.1.1.20200213 (FSS edition)"
+Name "Fsseudonymizer 1.1.1.20200213"
 
 # NOTE: Can use the 'Icon' command to specify an icon file(.ico) for the .exe file.
 Icon installerIcon.ico
@@ -21,7 +21,7 @@ installDir "$PROGRAMFILES\Fsseudonymizer"
 page custom startDialog "" ": Start Dialog"
 Function startDialog
   MessageBox MB_OKCANCEL "This application will install \
-  Fsseudonymizer version 1.1.1 (FSS edition) \ 
+  Fsseudonymizer version 1.1.1 \ 
   on your computer. Click OK to continue." \
   IDCANCEL NoCancelAbort 
   Abort
